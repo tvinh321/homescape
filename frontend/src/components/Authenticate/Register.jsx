@@ -1,6 +1,4 @@
-import React, { useState } from "react";
-import Header from "../Header";
-import Footer from "../Footer";
+import { useState } from "react";
 
 export default function Register({ register, setRegister }) {
   const [email, setEmail] = useState("");

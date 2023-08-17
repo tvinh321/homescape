@@ -2,6 +2,7 @@ package org.pltv.homescape.model;
 
 import java.util.List;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
@@ -20,6 +21,6 @@ public class City {
     private Long id;
     private String name;
 
-    @OneToMany
+    @OneToMany(mappedBy = "city", cascade = CascadeType.ALL)
     private List<District> districts;
 }

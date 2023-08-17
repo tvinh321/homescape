@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import axios from "../../axiosConfig";
 import { CSSTransition } from "react-transition-group";
 
 import { typesList, directionsList } from "../../constants/properties";
@@ -33,7 +33,7 @@ export default function Search() {
 
   useEffect(() => {
     axios
-      .get("/api/cities")
+      .get("/api/location/cities")
       .then((res) => {
         setCitiesList(res.data);
       })
@@ -45,7 +45,7 @@ export default function Search() {
   useEffect(() => {
     if (city)
       axios
-        .get("/api/districts/" + city)
+        .get("/api/location/districts/" + city)
         .then((res) => {
           setDistrictsList(res.data);
         })
@@ -57,7 +57,7 @@ export default function Search() {
   useEffect(() => {
     if (district)
       axios
-        .get("/api/wards/" + district)
+        .get("/api/location/wards/" + district)
         .then((res) => {
           setWardsList(res.data);
         })

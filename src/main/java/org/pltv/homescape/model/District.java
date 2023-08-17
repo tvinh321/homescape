@@ -2,8 +2,10 @@ package org.pltv.homescape.model;
 
 import java.util.List;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import lombok.AllArgsConstructor;
@@ -21,9 +23,9 @@ public class District {
     private Long id;
     private String name;
 
-    @OneToMany
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "district")
     private List<Ward> wards;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL, optional = false)
     private City city;
 }

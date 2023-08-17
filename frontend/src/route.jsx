@@ -7,7 +7,7 @@ import Landing from "./pages/Landing";
 import Authenticate from "./pages/Authenticate";
 import UserInfo from "./pages/UserInfo";
 
-import axios from "axios";
+import axios from "./axiosConfig"
 import NotFound from "./pages/NotFound";
 import Search from "./pages/Search";
 
