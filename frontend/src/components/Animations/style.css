@@ -1,0 +1,61 @@
+/* -------------------------------------------------- */
+/* ----------------- Fade Animation ----------------- */
+/* -------------------------------------------------- */
+
+.fade-enter {
+  opacity: 0;
+}
+
+.fade-enter-active {
+  opacity: 1;
+  transition: opacity 300ms;
+}
+
+.fade-exit {
+  opacity: 1;
+}
+
+.fade-exit-active {
+  opacity: 0;
+  transition: opacity 300ms;
+}
+
+/* -------------------------------------------------- */
+/* --------------- Dropdown Animation --------------- */
+/* -------------------------------------------------- */
+
+.list-dropdown-enter {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.list-dropdown-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 300ms, transform 300ms;
+}
+
+.list-dropdown-exit {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.list-dropdown-exit-active {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 300ms, transform 300ms;
+}
+
+/* -------------------------------------------------- */
+/* -------------- Slow Scroll Animation ------------- */
+/* -------------------------------------------------- */
+
+@keyframes slowScroll {
+  0% {
+    transform: translateY(-10%);
+  }
+
+  100% {
+    transform: translateY(-45%);
+  }
+}
