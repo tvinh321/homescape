@@ -7,7 +7,6 @@ import Landing from "./pages/Landing";
 import Authenticate from "./pages/Authenticate";
 import UserInfo from "./pages/UserInfo";
 
-import axios from "./axiosConfig"
 import NotFound from "./pages/NotFound";
 import Search from "./pages/Search";
 
@@ -21,10 +20,14 @@ export default function PageRoute() {
     //     setUser(res.data.user);
     //   }
     // });
-    // setUser({
-    //   id: 1,
-    //   avatar: "https://picsum.photos/200/300",
-    // });
+    setUser({
+      id: 1,
+      avatar: "https://picsum.photos/200/300",
+      name: "Nguyễn Văn A",
+      email: "nguyenvana@email.com",
+      phone: "0123456789",
+      address: "123 Đường ABC, Quận XYZ, TP. HCM",
+    });
   }, []);
 
   return (
@@ -34,7 +37,6 @@ export default function PageRoute() {
           <Route path="/" element={<Landing />} />
           <Route path="/dang-nhap" element={<Authenticate />} />
           <Route path="/tim-kiem" element={<Search />} />
-
           {user && (
             <>
               <Route path="/nguoi-dung" element={<UserInfo />} />

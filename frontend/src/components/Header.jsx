@@ -19,7 +19,7 @@ export default function Header() {
               <img
                 src={HomeScapeColor}
                 alt="HomeScape Logo"
-                className="h-14 ml-4"
+                className="h-14 ml-4 object-cover"
               />
             </div>
           </a>
@@ -33,20 +33,20 @@ export default function Header() {
                   Trang chủ
                 </a>
               </li>
-              <li className="mr-12">
+              <li className="mr-10">
                 <a
-                  href="#"
+                  href="/tim-kiem"
                   className="text-black hover:text-blue-800 font-semibold transition-all duration-150"
                 >
                   Nhà đất
                 </a>
               </li>
-              <li className="mr-12">
+              <li className="mr-10">
                 <a
-                  href="#"
+                  href={user ? "/dang-tin" : "/dang-nhap"}
                   className="text-black hover:text-blue-800 font-semibold transition-all duration-150"
                 >
-                  Tin tức
+                  Đăng tin
                 </a>
               </li>
               <li className="mr-10">
@@ -91,7 +91,7 @@ export default function Header() {
                   </div>
                 ) : (
                   <a href="/dang-nhap">
-                    <button className="bg-blue-800 text-white hover:text-black hover:bg-blue-500 font-bold py-2 px-4 rounded transition-all duration-150 flex justify-center items-center">
+                    <button className="bg-blue-700 text-white  hover:bg-blue-800 font-bold py-2 px-4 rounded transition-all duration-150 flex justify-center items-center">
                       <UserIcon className="h-5 w-5 mr-1" />
                       Đăng nhập
                     </button>

@@ -13,9 +13,7 @@ const mockData = [
     price: 1000000000,
     area: 100,
     location: "Quận 5, TP. Hồ Chí Minh",
-    image: {
-      content: "https://picsum.photos/200/300",
-    },
+    image: "https://picsum.photos/1920/1080",
     favorite: true,
   },
   {
@@ -24,9 +22,7 @@ const mockData = [
     price: 1000000000,
     area: 100,
     location: "Quận 5, TP. Hồ Chí Minh",
-    image: {
-      content: "https://picsum.photos/200/300",
-    },
+    image: "https://picsum.photos/1920/1080",
     favorite: false,
   },
   {
@@ -35,9 +31,7 @@ const mockData = [
     price: 1000000000,
     area: 100,
     location: "Quận 5, TP. Hồ Chí Minh",
-    image: {
-      content: "https://picsum.photos/200/300",
-    },
+    image: "https://picsum.photos/1920/1080",
     favorite: true,
   },
 ];
@@ -150,7 +144,7 @@ export default function SearchResults() {
                   <div className="flex border w-full hover:shadow-xl transition-all duration-200">
                     <img
                       className="object-cover h-48 w-64"
-                      src={house.image?.content}
+                      src={house.image}
                       alt="Ảnh nhà đất"
                     />
                     <div className="ml-4 w-full relative">

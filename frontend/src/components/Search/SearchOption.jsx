@@ -451,7 +451,13 @@ export default function Search() {
                   setShowPrice((prev) => !prev);
                 }}
               >
-                Mức giá
+                {minPrice && maxPrice ? (
+                  <p className="truncate w-28">
+                    {minPrice} - {maxPrice} tỷ
+                  </p>
+                ) : (
+                  <span>Mức giá</span>
+                )}
                 <ChevronDownIcon className="h-5 w-5 absolute right-3 top-3" />
               </div>
 
@@ -461,7 +467,7 @@ export default function Search() {
                 classNames="list-dropdown"
                 unmountOnExit
               >
-                <div className="absolute z-50 w-48 top-[3.7rem] left-0 bg-white rounded divide-gray-100 shadow px-6 py-2">
+                <div className="absolute z-50 w-52 top-[3.7rem] left-0 bg-white rounded divide-gray-100 shadow px-6 py-2">
                   <p className="mt-2.5 font-semibold">Mức giá</p>
                   <div className="flex items-center justify-center my-2 text-sm">
                     <input
@@ -473,7 +479,7 @@ export default function Search() {
                           return prev;
                         });
 
-                        setMinPrice(e.target.value);
+                        setMinPrice(e.target.value < 0 ? 0 : e.target.value);
                       }}
                       value={minPrice}
                       type="number"
@@ -486,7 +492,12 @@ export default function Search() {
                     </p>
                     <input
                       onChange={(e) => {
-                        setMaxPrice(e.target.value);
+                        setMaxPrice(e.target.value < 0 ? 0 : e.target.value);
+                      }}
+                      onBlur={(e) => {
+                        if (e.target.value < minPrice) {
+                          setMaxPrice(minPrice);
+                        }
                       }}
                       value={maxPrice}
                       type="number"
@@ -509,7 +520,13 @@ export default function Search() {
                   setShowArea((prev) => !prev);
                 }}
               >
-                Diện tích
+                {minArea && maxArea ? (
+                  <p className="truncate w-28">
+                    {minArea} - {maxArea} m<sup>2</sup>
+                  </p>
+                ) : (
+                  <span>Diện tích</span>
+                )}
                 <ChevronDownIcon className="h-5 w-5 absolute right-3 top-3" />
               </div>
 
@@ -519,7 +536,7 @@ export default function Search() {
                 classNames="list-dropdown"
                 unmountOnExit
               >
-                <div className="absolute z-50 w-48 top-[3.7rem] left-0 bg-white rounded divide-gray-100 shadow right-[20.8vw] px-6 py-2">
+                <div className="absolute z-50 w-52 top-[3.7rem] left-0 bg-white rounded divide-gray-100 shadow right-[20.8vw] px-6 py-2">
                   <p className="mt-2.5 font-semibold">Diện tích</p>
                   <div className="flex items-center justify-center my-2 text-sm">
                     <input
@@ -531,7 +548,7 @@ export default function Search() {
                           return prev;
                         });
 
-                        setMinArea(e.target.value);
+                        setMinArea(e.target.value < 0 ? 0 : e.target.value);
                       }}
                       value={minArea}
                       type="number"
@@ -544,7 +561,12 @@ export default function Search() {
                     </p>
                     <input
                       onChange={(e) => {
-                        setMaxArea(e.target.value);
+                        setMaxArea(e.target.value < 0 ? 0 : e.target.value);
+                      }}
+                      onBlur={(e) => {
+                        if (e.target.value < minArea) {
+                          setMaxArea(minArea);
+                        }
                       }}
                       value={maxArea}
                       type="number"
@@ -565,7 +587,17 @@ export default function Search() {
                 className="px-4 py-3 w-32 rounded-md border focus:border-gray-500 focus:bg-white focus:ring-0 text-sm cursor-pointer hover:bg-white hover:border hover:border-gray-500 transition-all duration-150 text-black"
                 onClick={() => setShowDirection((prev) => !prev)}
               >
-                Hướng nhà
+                {direction ? (
+                  <p className="truncate w-28">
+                    {
+                      directionsList.find(
+                        (directionItem) => directionItem.value == direction
+                      )?.name
+                    }
+                  </p>
+                ) : (
+                  <span>Hướng nhà</span>
+                )}
                 <ChevronDownIcon className="h-5 w-5 absolute right-3 top-3" />
               </div>
 
@@ -584,9 +616,7 @@ export default function Search() {
                     }}
                     value={direction}
                   >
-                    <option value="" disabled>
-                      Hướng nhà
-                    </option>
+                    <option value="">Hướng nhà</option>
                     {directionsList.map((directionItem) => {
                       return (
                         <option
@@ -607,7 +637,14 @@ export default function Search() {
                 className="px-4 py-3 w-32 rounded-md border focus:border-gray-500 focus:bg-white focus:ring-0 text-sm cursor-pointer hover:bg-white hover:border hover:border-gray-500 transition-all duration-150 text-black"
                 onClick={() => setShowRooms((prev) => !prev)}
               >
-                Số phòng
+                {(bedroom || toilet) && (
+                  <p className="truncate w-20">
+                    {bedroom ? bedroom + " phòng ngủ" : ""}
+                    {bedroom && toilet ? ", " : ""}
+                    {toilet ? toilet + " phòng tắm" : ""}
+                  </p>
+                )}
+                {!bedroom && !toilet && <span>Số phòng</span>}
                 <ChevronDownIcon className="h-5 w-5 absolute right-3 top-3" />
               </div>
 
@@ -626,9 +663,7 @@ export default function Search() {
                     }}
                     value={bedroom}
                   >
-                    <option value="" disabled>
-                      Số phòng ngủ
-                    </option>
+                    <option value="">Số phòng ngủ</option>
                     <option value="1">1 phòng</option>
                     <option value="2">2 phòng</option>
                     <option value="3">3 phòng</option>
@@ -644,9 +679,7 @@ export default function Search() {
                     }}
                     value={toilet}
                   >
-                    <option value="" disabled>
-                      Số phòng tắm
-                    </option>
+                    <option value="">Số phòng tắm</option>
                     <option value="1">1 phòng</option>
                     <option value="2">2 phòng</option>
                     <option value="3">3 phòng</option>

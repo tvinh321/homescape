@@ -11,14 +11,14 @@ import MyPost from "../components/UserInfo/MyPost";
 import FavoritePost from "../components/UserInfo/FavoritePost";
 
 export default function UserInfo() {
-  const [selected, setSelected] = useState("nguoi-dung");
+  const [selected, setSelected] = useState(window.location.pathname.slice(1));
 
   return (
     <div>
       <Header />
       <div className="flex">
         <UserMenu selected={selected} setSelected={setSelected} />
-        <div className="w-4/5 bg-gray-200 h-screen">
+        <div className="w-4/5 bg-white min-h-screen">
           <SwitchTransition>
             <CSSTransition
               key={selected}

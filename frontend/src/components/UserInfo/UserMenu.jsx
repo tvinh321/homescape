@@ -12,11 +12,11 @@ export default function UserMenu({ selected, setSelected }) {
   const { user, setUser } = useContext(AuthContext);
 
   return (
-    <div className="w-1/5 h-screen">
+    <div className="w-1/5 h-full">
       <img
         src={user?.avatar}
         alt="avatar"
-        className="rounded-full w-32 h-32 mx-auto my-10"
+        className="rounded-full w-32 h-32 mx-auto my-10 object-cover"
       />
       <div className="text-center">
         <h1 className="text-2xl font-bold">Nguyễn Văn A</h1>
