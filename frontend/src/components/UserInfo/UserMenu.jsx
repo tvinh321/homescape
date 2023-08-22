@@ -20,7 +20,6 @@ export default function UserMenu({ selected, setSelected }) {
       />
       <div className="text-center">
         <h1 className="text-2xl font-bold">Nguyễn Văn A</h1>
-        <p className="text-sm">Thành viên từ 2021</p>
       </div>
       <div className="mt-5">
         <ul className="flex flex-col">

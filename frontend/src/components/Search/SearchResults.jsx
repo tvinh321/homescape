@@ -140,7 +140,7 @@ export default function SearchResults() {
           <>
             {sortedResults.map((house, index) => {
               return (
-                <a href={`/thong-tin/${house.id}`} key={index}>
+                <a href={`/bai-dang/${house.id}`} key={index}>
                   <div className="flex border w-full hover:shadow-xl transition-all duration-200">
                     <img
                       className="object-cover h-48 w-64"

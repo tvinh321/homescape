@@ -55,7 +55,7 @@ export default function Header() {
                     <img
                       src={user.avatar}
                       alt="avatar"
-                      className="h-14 w-14 rounded-full cursor-pointer"
+                      className="h-14 w-14 rounded-full cursor-pointer object-cover"
                       onClick={() => {
                         setUserMenu((prev) => !prev);
                       }}

@@ -11,7 +11,7 @@ export default function OutstandingProperties() {
           {houseList ? (
             houseList.map((house, index) => {
               return (
-                <a href={`/thong-tin/${house.id}`} key={index}>
+                <a href={`/bai-dang/${house.id}`} key={index}>
                   <div className="rounded-lg overflow-hidden shadow-sm hover:shadow-xl transition-all duration-150 border border-gray-300 relative h-[380px] bg-white">
                     <div className="h-48">
                       <img

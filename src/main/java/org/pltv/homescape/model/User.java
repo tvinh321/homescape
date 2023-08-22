@@ -1,7 +1,6 @@
 package org.pltv.homescape.model;
 
 import jakarta.persistence.Id;
-import jakarta.validation.Constraint;
 import jakarta.validation.constraints.Email;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

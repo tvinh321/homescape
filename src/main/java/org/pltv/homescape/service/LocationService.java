@@ -2,9 +2,6 @@ package org.pltv.homescape.service;
 
 import java.util.Collection;
 
-import org.pltv.homescape.dto.CityDTO;
-import org.pltv.homescape.dto.DistrictDTO;
-import org.pltv.homescape.dto.WardDTO;
 import org.pltv.homescape.model.City;
 import org.pltv.homescape.model.District;
 import org.pltv.homescape.model.Ward;
