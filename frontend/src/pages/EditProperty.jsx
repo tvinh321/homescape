@@ -150,7 +150,7 @@ export default function PostProperty() {
     <>
       <Header />
       <div className="mx-40 mt-12 mb-24">
-        <h1 className="font-semibold text-2xl mb-6">Đăng tin</h1>
+        <h1 className="font-semibold text-2xl mb-6">Chỉnh sửa bài đăng</h1>
         <div className="border px-12 py-8 shadow-md rounded-lg">
           <form onSubmit={handleSubmit}>
             <div className="flex flex-col mb-4">
@@ -520,7 +520,7 @@ export default function PostProperty() {
                 className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-all duration-200 font-semibold"
                 type="submit"
               >
-                Đăng tin
+                Hoàn thành
               </button>
             </div>
           </form>

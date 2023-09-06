@@ -11,7 +11,11 @@ import { Carousel } from "react-responsive-carousel";
 import ReactPannellum from "react-pannellum";
 import Youtube from "react-youtube";
 
-import { PhoneIcon, EnvelopeIcon } from "@heroicons/react/24/outline";
+import {
+  PhoneIcon,
+  EnvelopeIcon,
+  HeartIcon,
+} from "@heroicons/react/24/outline";
 import { SwitchTransition, CSSTransition } from "react-transition-group";
 
 const videoCode = (url) => {
@@ -35,23 +39,23 @@ const propertyMock = {
   files: [
     {
       type: "image",
-      url: "https://picsum.photos/200/300",
+      url: "https://picsum.photos/1920/1080",
     },
     {
       type: "image",
-      url: "https://picsum.photos/200/300",
+      url: "https://picsum.photos/1920/1080",
     },
     {
       type: "image",
-      url: "https://picsum.photos/200/300",
+      url: "https://picsum.photos/1920/1080",
     },
     {
       type: "pano",
-      url: "https://picsum.photos/200/300",
+      url: "https://picsum.photos/4000/1000",
     },
     {
       type: "pano",
-      url: "https://picsum.photos/200/300",
+      url: "https://picsum.photos/4000/1000",
     },
     {
       type: "video",
@@ -66,6 +70,7 @@ const propertyMock = {
     phone: "0123456789",
     email: "abc@abc.con",
   },
+  favorite: true,
 };
 
 export default function ViewProperty() {
@@ -93,6 +98,7 @@ export default function ViewProperty() {
                   <div className="w-full h-full px-2" key={"pano" + index}>
                     <ReactPannellum
                       id={"pano" + index}
+                      sceneId={"pano" + index}
                       className="object-cover h-full w-full"
                       imageSource={item?.url}
                       pitch={10}
@@ -113,7 +119,7 @@ export default function ViewProperty() {
                 ?.map((item, index) => (
                   <div className="w-full h-full" key={"video" + index}>
                     <Youtube
-                      className="h-full w-full px-2"
+                      className="h-full w-full"
                       containerClassName="embed embed-youtube"
                       opts={{ width: "100%", height: "100%" }}
                       videoId={videoCode(item?.url)}
@@ -134,9 +140,21 @@ export default function ViewProperty() {
                 ))}
             </Carousel>
             <div className="mt-8">
-              <h1 className="font-semibold text-3xl mb-1">
-                {propertyMock.title}
-              </h1>
+              <div className="flex justify-between">
+                <h1 className="font-semibold text-3xl mb-1">
+                  {propertyMock.title}
+                </h1>
+                <button>
+                  <HeartIcon
+                    className={
+                      "h-8 w-8" +
+                      (propertyMock.favorite
+                        ? " fill-current text-red-600"
+                        : " text-gray-400")
+                    }
+                  />
+                </button>
+              </div>
               <h2 className="text-gray-400 mb-6">{propertyMock.address}</h2>
               <div className="flex items-center">
                 <h1 className="text-2xl font-semibold text-red-600">
@@ -204,7 +222,7 @@ export default function ViewProperty() {
                   classNames="fade"
                   unmountOnExit={false}
                 >
-                  {showPhone ? (
+                  {!showPhone ? (
                     <p>Xem SĐT</p>
                   ) : (
                     <p>{propertyMock?.user?.phone}</p>
@@ -224,7 +242,7 @@ export default function ViewProperty() {
                   classNames="fade"
                   unmountOnExit={false}
                 >
-                  {showEmail ? (
+                  {!showEmail ? (
                     <p>Xem Email</p>
                   ) : (
                     <p>{propertyMock?.user?.email}</p>

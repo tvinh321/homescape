@@ -30,7 +30,7 @@ export default function Landing() {
               tại đây
             </p>
             <a href={user ? "/dang-tin" : "/dang-nhap"}>
-              <button className="bg-blue-700 text-white  hover:bg-blue-900 font-bold py-2 px-4 transition-all duration-150 flex justify-center items-center">
+              <button className="bg-blue-700 text-white rounded-lg hover:bg-blue-900 font-semibold py-3 px-6 transition-all duration-150 flex justify-center items-center">
                 Đăng tin
               </button>
             </a>

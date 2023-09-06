@@ -74,7 +74,7 @@ export default function FavoritePost() {
                         {(house.price / 1000000000).toFixed(1)} tỷ
                       </p>
                       <div className="flex justify-between bottom-0 absolute w-full mb-4">
-                        <p className="mt-4 text-gray-700 text-sm">
+                        <p className="text-gray-700 text-sm">
                           {house.location}
                         </p>
                         <button

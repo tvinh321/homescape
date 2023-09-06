@@ -10,6 +10,7 @@ import NotFound from "./pages/NotFound";
 import Search from "./pages/Search";
 import PostProperty from "./pages/PostProperty";
 import ViewProperty from "./pages/ViewProperty";
+import EditProperty from "./pages/EditProperty";
 
 export default function PageRoute() {
   const [user, setUser] = useState(null);
@@ -45,7 +46,8 @@ export default function PageRoute() {
               <Route path="/nguoi-dung" element={<UserInfo />} />
               <Route path="/bai-dang-cua-ban" element={<UserInfo />} />
               <Route path="/bai-dang-da-luu" element={<UserInfo />} />
-              <Route path="/dang-bai" element={<PostProperty />} />
+              <Route path="/dang-tin" element={<PostProperty />} />
+              <Route path="/chinh-sua/:id" element={<EditProperty />} />
             </>
           )}
 

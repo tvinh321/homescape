@@ -133,8 +133,9 @@ export default function SearchResults() {
       </div>
       <div className="mx-auto mt-8">
         {loading ? (
-          <div className="col-span-3 flex justify-center">
-            <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-gray-900"></div>
+          <div className="col-span-3 flex justify-center flex-col items-center mt-24 mb-10">
+            <div className="animate-spin rounded-full h-16 w-16 border-t border-gray-900"></div>
+            <p className="mt-8">Đang tải</p>
           </div>
         ) : (
           <>

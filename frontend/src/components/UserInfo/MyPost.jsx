@@ -82,7 +82,7 @@ export default function MyPost() {
                             <PencilIcon className="h-5 w-5 mr-2 text-gray-700 hover:text-blue-700" />
                           </a>
                           <TrashIcon
-                            className="h-5 w-5 text-gray-700 hover:text-blue-700 cursor-pointer"
+                            className="h-5 w-5 text-gray-700 hover:text-red-700 cursor-pointer"
                             onClick={() => {}}
                           />
                         </div>
