@@ -15,6 +15,7 @@ import {
   PhoneIcon,
   EnvelopeIcon,
   HeartIcon,
+  XMarkIcon,
 } from "@heroicons/react/24/outline";
 import { SwitchTransition, CSSTransition } from "react-transition-group";
 
@@ -79,6 +80,16 @@ export default function ViewProperty() {
   const [showPhone, setShowPhone] = useState(false);
   const [showEmail, setShowEmail] = useState(false);
 
+  const [image, setImage] = useState(null);
+  const [fullScreen, setFullScreen] = useState(false);
+  const [zoom, setZoom] = useState(1);
+  const [panning, setPanning] = useState(false);
+  const [panningPosition, setPanningPosition] = useState({ x: 0, y: 0 });
+
+  const preventScroll = (e) => {
+    e.preventDefault();
+  };
+
   return (
     <>
       <Header />
@@ -130,11 +141,18 @@ export default function ViewProperty() {
               {propertyMock?.files
                 ?.filter((item) => item.type == "image")
                 ?.map((image, index) => (
-                  <div key={"image" + index} className="w-full h-full">
+                  <div
+                    key={"image" + index}
+                    className="w-full h-full cursor-pointer"
+                    onClick={() => {
+                      setImage(image?.url);
+                      setFullScreen(true);
+                    }}
+                  >
                     <img
                       src={image?.url}
                       alt="property"
-                      className="object-cover h-[36rem] w-full px-2"
+                      className="object-cover h-[36rem] w-full px-2 cursor-pointer"
                     />
                   </div>
                 ))}
@@ -254,6 +272,63 @@ export default function ViewProperty() {
         </div>
       </div>
       <Footer />
+      <CSSTransition
+        in={fullScreen}
+        timeout={200}
+        classNames="fade"
+        unmountOnExit={false}
+      >
+        <div
+          className={
+            "fixed top-0 left-0 w-full h-full bg-black z-50 flex justify-center items-center" +
+            (fullScreen ? " block" : " hidden")
+          }
+        >
+          <img
+            src={image}
+            alt="property"
+            className="w-full h-full object-contain transition-all duration-100 ease-in-out"
+            style={{
+              transform: `scale(${zoom}) translate(${panningPosition.x}px, ${panningPosition.y}px)`,
+            }}
+            onWheel={(e) => {
+              e.preventDefault();
+              if (e.deltaY < 0) {
+                setZoom((prev) => prev + 0.1);
+              } else {
+                setZoom((prev) => prev - 0.1);
+              }
+            }}
+            onMouseDown={(e) => {
+              e.preventDefault();
+              setPanning(true);
+            }}
+            onMouseUp={() => setPanning(false)}
+            onMouseMove={(e) => {
+              if (panning) {
+                setPanningPosition({
+                  x: e.movementX + panningPosition.x,
+                  y: e.movementY + panningPosition.y,
+                });
+              }
+            }}
+            onMouseEnter={() => {
+              document.body.style.overflow = "hidden";
+            }}
+            onMouseLeave={() => {
+              document.body.style.overflow = "auto";
+            }}
+          />
+          <XMarkIcon
+            className="h-10 w-10 absolute top-0 right-0 m-4 text-white cursor-pointer"
+            onClick={() => {
+              setFullScreen(false);
+              setZoom(1);
+              setPanningPosition({ x: 0, y: 0 });
+            }}
+          />
+        </div>
+      </CSSTransition>
     </>
   );
 }

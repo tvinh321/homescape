@@ -59,14 +59,20 @@ export default function MyPost() {
                 <>
                   <div className="flex border w-full hover:shadow-xl transition-all duration-200">
                     <img
-                      className="object-cover h-48 w-64"
+                      className="object-cover h-48 w-64 cursor-pointer"
                       src={house.image}
                       alt="Ảnh nhà đất"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        window.location.href = `/bai-dang/${house.id}`;
+                      }}
                     />
                     <div className="ml-4 w-full relative">
-                      <div className="font-bold leading-relaxed mt-2 truncate text-lg">
-                        {house.title}
-                      </div>
+                      <a href={`/bai-dang/${house.id}`}>
+                        <div className="font-bold leading-relaxed mt-2 truncate text-lg transition-all duration-200 hover:text-blue-700">
+                          {house.title}
+                        </div>
+                      </a>
                       <p className="text-gray-700 text-sm">
                         {house.area} m<sup>2</sup>
                       </p>
