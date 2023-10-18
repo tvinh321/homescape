@@ -75,6 +75,12 @@ export default function Header() {
                           Thông tin cá nhân
                         </a>
                         <a
+                          href="/thay-doi-mat-khau"
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-700 hover:text-white"
+                        >
+                          Thay đổi mật khẩu
+                        </a>
+                        <a
                           href="/bai-dang-cua-ban"
                           className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-700 hover:text-white"
                         >

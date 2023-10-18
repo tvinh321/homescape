@@ -44,6 +44,7 @@ export default function PageRoute() {
           {user && (
             <>
               <Route path="/nguoi-dung" element={<UserInfo />} />
+              <Route path="/thay-doi-mat-khau" element={<UserInfo />} />
               <Route path="/bai-dang-cua-ban" element={<UserInfo />} />
               <Route path="/bai-dang-da-luu" element={<UserInfo />} />
               <Route path="/dang-tin" element={<PostProperty />} />

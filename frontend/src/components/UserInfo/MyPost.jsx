@@ -14,7 +14,6 @@ const mockData = [
     area: 100,
     location: "Quận 5, TP. Hồ Chí Minh",
     image: "https://picsum.photos/1920/1080",
-    favorite: true,
   },
   {
     id: 2,
@@ -23,7 +22,6 @@ const mockData = [
     area: 100,
     location: "Quận 5, TP. Hồ Chí Minh",
     image: "https://picsum.photos/1920/1080",
-    favorite: false,
   },
   {
     id: 3,
@@ -32,7 +30,6 @@ const mockData = [
     area: 100,
     location: "Quận 5, TP. Hồ Chí Minh",
     image: "https://picsum.photos/1920/1080",
-    favorite: true,
   },
 ];
 

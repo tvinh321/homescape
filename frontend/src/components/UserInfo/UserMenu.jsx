@@ -4,6 +4,7 @@ import {
   IdentificationIcon,
   BuildingOffice2Icon,
   HeartIcon,
+  KeyIcon,
 } from "@heroicons/react/24/outline";
 
 import { AuthContext } from "../../contexts/AuthContext";
@@ -40,6 +41,25 @@ export default function UserMenu({ selected, setSelected }) {
             >
               <IdentificationIcon className="h-5 w-5 mr-2" />
               <span>Thông tin cá nhân</span>
+            </a>
+          </li>
+          <li
+            className={
+              "hover:bg-blue-700 hover:text-white px-4 py-4 transition-all duration-200" +
+              (selected === "thay-doi-mat-khau" ? " bg-blue-700 text-white" : "")
+            }
+          >
+            <a
+              href="#"
+              className="flex items-center"
+              onClick={(e) => {
+                e.preventDefault();
+                setSelected("thay-doi-mat-khau");
+                window.history.pushState({}, "", "/thay-doi-mat-khau");
+              }}
+            >
+              <KeyIcon className="h-5 w-5 mr-2" />
+              <span>Thay đổi mật khẩu</span>
             </a>
           </li>
           <li

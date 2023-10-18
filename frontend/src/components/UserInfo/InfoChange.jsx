@@ -206,7 +206,7 @@ export default function InfoChange() {
                 type="text"
                 name="address"
                 id="address"
-                className="border border-gray-400 rounded-md py-2 px-2 mb-2 mt-4 w-full bg-gray-200 text-gray-700"
+                className="border border-gray-400 rounded-md py-2 px-2 mb-2 mt-4 w-full bg-gray-200 text-gray-700 cursor-default"
                 value={address}
                 readOnly
               />

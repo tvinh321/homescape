@@ -7,6 +7,7 @@ import UserMenu from "../components/UserInfo/UserMenu";
 import { SwitchTransition, CSSTransition } from "react-transition-group";
 
 import InfoChange from "../components/UserInfo/InfoChange";
+import ChangePassword from "../components/UserInfo/ChangePassword";
 import MyPost from "../components/UserInfo/MyPost";
 import FavoritePost from "../components/UserInfo/FavoritePost";
 
@@ -28,6 +29,8 @@ export default function UserInfo() {
             >
               {selected === "nguoi-dung" ? (
                 <InfoChange />
+              ) : selected === "thay-doi-mat-khau" ? (
+                <ChangePassword />
               ) : selected === "bai-dang-cua-ban" ? (
                 <MyPost />
               ) : (

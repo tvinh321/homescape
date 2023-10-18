@@ -68,7 +68,7 @@ export default function SearchResults() {
       ? searchParams.get("type").split(",")
       : null;
     const bedroom = searchParams.get("bedroom");
-    const verified = searchParams.get("verified");
+    const bathroom = searchParams.get("bathroom");
     const paging = searchParams.get("page");
     const sort = sortOption;
 
@@ -78,7 +78,7 @@ export default function SearchResults() {
       area: area,
       type: type,
       bedroom: bedroom,
-      verified: verified,
+      bathroom: bathroom,
       sort: sort,
     };
 

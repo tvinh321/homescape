@@ -1,4 +1,4 @@
-package org.pltv.homescape.dto;
+package org.pltv.homescape.dto.location;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class DistrictDTO {
+public class DistrictResult {
     private Long id;
     private String name;
 }

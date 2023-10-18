@@ -14,21 +14,30 @@ import org.springframework.stereotype.Service;
 @Service
 public class LocationService {
     @Autowired
-    private CityRepository cityRepository;
+    private CityRepository cityRepo;
     @Autowired
-    private DistrictRepository districtRepository;
+    private DistrictRepository districtRepo;
     @Autowired
-    private WardRepository wardRepository;
+    private WardRepository wardRepo;
 
     public Collection<City> getCities() {
-        return cityRepository.findAll();
+        return cityRepo.findAll();
     }
 
     public Collection<District> getDistricts(Long cityId) {
-        return districtRepository.findByCityId(cityId);
+        return districtRepo.findByCityId(cityId);
     }
 
     public Collection<Ward> getWards(Long districtId) {
-        return wardRepository.findByDistrictId(districtId);
+        return wardRepo.findByDistrictId(districtId);
+    }
+
+    public Ward getWardFromId(Long id) {
+        return wardRepo.findById(id).orElse(null);
+    }
+
+    public String getAddress(String street, Ward ward) {
+        return street + ", " + ward.getName() + ", " + ward.getDistrict().getName() + ", "
+                + ward.getDistrict().getCity().getName();
     }
 }
