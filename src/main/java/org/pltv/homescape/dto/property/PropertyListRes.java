@@ -1,6 +1,4 @@
-package org.pltv.homescape.dto.user;
-
-import java.time.LocalDateTime;
+package org.pltv.homescape.dto.property;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,12 +9,13 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class MyPropertiesRes {
+public class PropertyListRes {
     private Long id;
     private String title;
-    private Integer price;
-    private Float area;
+    private Long price;
+    private Double area;
     private String createdAt;
     private String location;
     private String image;
+    private Boolean favorite;
 }

@@ -2,7 +2,11 @@ import React, { useState, useEffect } from "react";
 import axios from "../../axiosConfig";
 import { CSSTransition } from "react-transition-group";
 
-import { typesList, directionsList } from "../../constants/properties";
+import {
+  typesList,
+  directionsList,
+  bedroomList,
+} from "../../constants/properties";
 
 import { ChevronDownIcon } from "@heroicons/react/24/solid";
 
@@ -20,9 +24,8 @@ export default function Search() {
   const [minArea, setMinArea] = useState();
   const [maxArea, setMaxArea] = useState();
   const [type, setType] = useState([]);
-  const [bedroom, setBedroom] = useState("");
-  const [toilet, setToilet] = useState("");
-  const [direction, setDirection] = useState("");
+  const [bedroom, setBedroom] = useState([]);
+  const [direction, setDirection] = useState([]);
 
   const [showPropertyTypes, setShowPropertyTypes] = useState(false);
   const [showLocation, setShowLocation] = useState(false);
@@ -91,9 +94,8 @@ export default function Search() {
       params.append("area", minArea + "-" + maxArea);
     }
     if (type.length > 0) params.append("type", type.join(","));
-    if (bedroom) params.append("bedroom", bedroom);
-    if (toilet) params.append("toilet", toilet);
-    if (direction) params.append("direction", direction);
+    if (bedroom.length > 0) params.append("bedroom", bedroom);
+    if (direction.length > 0) params.append("direction", direction);
 
     window.location.href = "/tim-kiem?" + params.toString();
   };
@@ -546,16 +548,19 @@ export default function Search() {
 
             <div className="relative">
               <div
-                className="px-4 py-3 w-32 rounded-md border focus:border-gray-500 focus:bg-white focus:ring-0 text-sm cursor-pointer hover:bg-white hover:border hover:border-gray-500 transition-all duration-150 text-black"
+                className="px-4 py-3 w-48 rounded-md border focus:border-gray-500 focus:bg-white focus:ring-0 text-sm cursor-pointer hover:bg-white hover:border hover:border-gray-500 transition-all duration-150 text-black"
                 onClick={() => setShowDirection((prev) => !prev)}
               >
                 {direction ? (
                   <p className="truncate w-28">
-                    {
-                      directionsList.find(
-                        (directionItem) => directionItem.value == direction
-                      )?.name
-                    }
+                    {directionsList
+                      .map((directionItem) => {
+                        return direction.includes(directionItem.value)
+                          ? directionItem.name
+                          : null;
+                      })
+                      ?.filter((item) => item)
+                      .join(", ") || "Hướng nhà"}
                   </p>
                 ) : (
                   <span>Hướng nhà</span>
@@ -569,44 +574,97 @@ export default function Search() {
                 classNames="list-dropdown"
                 unmountOnExit
               >
-                <div className="absolute z-50 w-48 top-[3.7rem] left-0 bg-white rounded divide-gray-100 shadow right-[20px] px-6 py-2">
-                  <p className="font-semibold mb-2">Hướng nhà</p>
-                  <select
-                    className="px-4 py-2 rounded-md bg-white border-gray-800 border focus:border-gray-500 focus:bg-white focus:ring-0 text-sm mb-2"
-                    onChange={(e) => {
-                      setDirection(e.target.value);
-                    }}
-                    value={direction}
+                <div
+                  className={
+                    "absolute z-50 w-48 bg-white rounded divide-gray-100 shadow top-14"
+                  }
+                >
+                  <ul
+                    className="py-1 text-sm text-neutral-900"
+                    aria-labelledby="dropdown-button"
                   >
-                    <option value="">Hướng nhà</option>
-                    {directionsList.map((directionItem) => {
-                      return (
-                        <option
-                          value={directionItem.value}
-                          key={directionItem.id}
+                    {directionsList ? (
+                      directionsList.map((directionItem, index) => {
+                        return (
+                          <li
+                            className="w-full rounded-t-lg border-gray-200"
+                            key={index}
+                          >
+                            <div
+                              className="flex items-center px-3 hover:bg-gray-100 cursor-pointer"
+                              onClick={(e) => {
+                                if (!direction.includes(directionItem.value)) {
+                                  setDirection([
+                                    ...direction,
+                                    directionItem.value,
+                                  ]);
+                                } else {
+                                  setDirection(
+                                    direction.filter(
+                                      (item) => item != directionItem.value
+                                    )
+                                  );
+                                }
+                              }}
+                            >
+                              <p
+                                htmlFor="house-checkbox"
+                                className="my-2 w-full text-sm text-gray-900"
+                              >
+                                {directionItem.name}
+                              </p>
+                              <input
+                                id="house-checkbox"
+                                type="checkbox"
+                                value=""
+                                className="w-4 h-4 text-neutral-600 bg-gray-100 rounded border-gray-300 focus:ring-neutral-500 focus:ring-2"
+                                checked={direction.includes(
+                                  directionItem.value
+                                )}
+                              />
+                            </div>
+                          </li>
+                        );
+                      })
+                    ) : (
+                      <div className="flex items-center justify-center w-full h-20">
+                        <svg
+                          className="animate-spin -ml-1 mr-3 h-5 w-5 text-gray-900"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
                         >
-                          {directionItem.name}
-                        </option>
-                      );
-                    })}
-                  </select>
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          ></circle>
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8v1a7 7 0 00-7 7h1z"
+                          ></path>
+                        </svg>
+                      </div>
+                    )}
+                  </ul>
                 </div>
               </CSSTransition>
             </div>
 
             <div className="relative">
               <div
-                className="px-4 py-3 w-32 rounded-md border focus:border-gray-500 focus:bg-white focus:ring-0 text-sm cursor-pointer hover:bg-white hover:border hover:border-gray-500 transition-all duration-150 text-black"
+                className="px-4 py-3 w-48 rounded-md border focus:border-gray-500 focus:bg-white focus:ring-0 text-sm cursor-pointer hover:bg-white hover:border hover:border-gray-500 transition-all duration-150 text-black"
                 onClick={() => setShowRooms((prev) => !prev)}
               >
-                {(bedroom || toilet) && (
-                  <p className="truncate w-20">
-                    {bedroom ? bedroom + " phòng ngủ" : ""}
-                    {bedroom && toilet ? ", " : ""}
-                    {toilet ? toilet + " phòng tắm" : ""}
-                  </p>
-                )}
-                {!bedroom && !toilet && <span>Số phòng</span>}
+                <p className="truncate w-28">
+                  {bedroom?.length > 0
+                    ? bedroom.sort().join(", ") + " phòng ngủ"
+                    : "Phòng ngủ"}
+                </p>
                 <ChevronDownIcon className="h-5 w-5 absolute right-3 top-3" />
               </div>
 
@@ -616,38 +674,78 @@ export default function Search() {
                 classNames="list-dropdown"
                 unmountOnExit
               >
-                <div className="absolute z-50 w-48 top-[3.7rem] left-0 bg-white rounded divide-gray-100 shadow right-[20px] px-6 py-2">
-                  <p className="font-semibold mb-2">Số phòng ngủ</p>
-                  <select
-                    className="px-4 py-2 rounded-md bg-white border-gray-800 border focus:border-gray-500 focus:bg-white focus:ring-0 text-sm mb-2"
-                    onChange={(e) => {
-                      setBedroom(e.target.value);
-                    }}
-                    value={bedroom}
+                <div
+                  className={
+                    "absolute z-50 w-48 bg-white rounded divide-gray-100 shadow top-14"
+                  }
+                >
+                  <ul
+                    className="py-1 text-sm text-neutral-900"
+                    aria-labelledby="dropdown-button"
                   >
-                    <option value="">Số phòng ngủ</option>
-                    <option value="1">1 phòng</option>
-                    <option value="2">2 phòng</option>
-                    <option value="3">3 phòng</option>
-                    <option value="4">4 phòng</option>
-                    <option value="5">5 phòng</option>
-                  </select>
-
-                  <p className="font-semibold mb-2">Số phòng tắm</p>
-                  <select
-                    className="px-4 py-2 rounded-md bg-white border-gray-800 border focus:border-gray-500 focus:bg-white focus:ring-0 text-sm mb-2"
-                    onChange={(e) => {
-                      setToilet(e.target.value);
-                    }}
-                    value={toilet}
-                  >
-                    <option value="">Số phòng tắm</option>
-                    <option value="1">1 phòng</option>
-                    <option value="2">2 phòng</option>
-                    <option value="3">3 phòng</option>
-                    <option value="4">4 phòng</option>
-                    <option value="5">5 phòng</option>
-                  </select>
+                    {bedroomList ? (
+                      bedroomList.map((bedroomItem, index) => {
+                        return (
+                          <li
+                            className="w-full rounded-t-lg border-gray-200"
+                            key={index}
+                          >
+                            <div
+                              className="flex items-center px-3 hover:bg-gray-100 cursor-pointer"
+                              onClick={(e) => {
+                                if (!bedroom.includes(bedroomItem.value)) {
+                                  setBedroom([...bedroom, bedroomItem.value]);
+                                } else {
+                                  setBedroom(
+                                    bedroom.filter(
+                                      (item) => item != bedroomItem.value
+                                    )
+                                  );
+                                }
+                              }}
+                            >
+                              <p
+                                htmlFor="house-checkbox"
+                                className="my-2 w-full text-sm text-gray-900"
+                              >
+                                {bedroomItem.name}
+                              </p>
+                              <input
+                                id="house-checkbox"
+                                type="checkbox"
+                                value=""
+                                className="w-4 h-4 text-neutral-600 bg-gray-100 rounded border-gray-300 focus:ring-neutral-500 focus:ring-2"
+                                checked={bedroom.includes(bedroomItem.value)}
+                              />
+                            </div>
+                          </li>
+                        );
+                      })
+                    ) : (
+                      <div className="flex items-center justify-center w-full h-20">
+                        <svg
+                          className="animate-spin -ml-1 mr-3 h-5 w-5 text-gray-900"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          ></circle>
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8v1a7 7 0 00-7 7h1z"
+                          ></path>
+                        </svg>
+                      </div>
+                    )}
+                  </ul>
                 </div>
               </CSSTransition>
             </div>

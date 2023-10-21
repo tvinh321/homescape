@@ -1,38 +1,18 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { HeartIcon } from "@heroicons/react/24/outline";
 
-const mockData = [
-  {
-    id: 1,
-    title: "Bán nhà mặt tiền đường Nguyễn Văn Cừ, Quận 5",
-    price: 1000000000,
-    area: 100,
-    location: "Quận 5, TP. Hồ Chí Minh",
-    image: "https://picsum.photos/1920/1080",
-    favorite: true,
-  },
-  {
-    id: 2,
-    title: "Bán nhà mặt tiền đường Nguyễn Văn Cừ, Quận 5",
-    price: 1000000000,
-    area: 100,
-    location: "Quận 5, TP. Hồ Chí Minh",
-    image: "https://picsum.photos/1920/1080",
-    favorite: false,
-  },
-  {
-    id: 3,
-    title: "Bán nhà mặt tiền đường Nguyễn Văn Cừ, Quận 5",
-    price: 1000000000,
-    area: 100,
-    location: "Quận 5, TP. Hồ Chí Minh",
-    image: "https://picsum.photos/1920/1080",
-    favorite: true,
-  },
-];
+import axios, { baseURL } from "../../axiosConfig";
 
 export default function OutstandingProperties() {
-  const [houseList, setHouseList] = React.useState(mockData);
+  const [houseList, setHouseList] = React.useState([]);
+
+  useEffect(() => {
+    const fetchHouseList = async () => {
+      const res = await axios.get("/api/property/outstanding");
+      setHouseList(res.data.data);
+    };
+    fetchHouseList();
+  }, []);
 
   return (
     <div className="w-full px-48 pt-10 pb-20 bg-white">
@@ -47,7 +27,7 @@ export default function OutstandingProperties() {
                     <div className="h-48">
                       <img
                         className="object-cover h-full w-full rounded-t-lg"
-                        src={`${house.image}`}
+                        src={baseURL + `/api/property/file/${house.image}`}
                         alt="Ảnh nhà đất"
                       />
                     </div>
@@ -58,7 +38,7 @@ export default function OutstandingProperties() {
                         </div>
                         <p className="text-gray-700 text-sm">
                           {(house.price / 1000000000).toFixed(1)} tỷ -{" "}
-                          {house.area} m<sup>2</sup>
+                          {house.area?.toFixed(1)} m<sup>2</sup>
                         </p>
                       </div>
                       <div className="flex justify-between">

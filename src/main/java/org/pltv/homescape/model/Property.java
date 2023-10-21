@@ -37,21 +37,30 @@ public class Property {
     private Long id;
 
     @NotBlank(message = "Title is mandatory")
+    @Column(nullable = false)
     private String title;
 
     @NotBlank(message = "Description is mandatory")
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String description;
 
     @NotNull
+    @Column(nullable = false)
     private String street;
 
-    @Column(length = 7)
+    @Column(length = 7, nullable = false)
+    @NotBlank(message = "Type is mandatory")
     private String type;
 
     @Positive
-    private Integer price;
+    @NotNull
+    @Column(nullable = false)
+    private Long price;
 
-    private Float area;
+    @Positive
+    @NotNull
+    @Column(nullable = false)
+    private Double area;
 
     @Column(length = 7)
     private String direction;
@@ -66,15 +75,18 @@ public class Property {
     private Byte floor;
 
     @PositiveOrZero
+    @Column(nullable = false, columnDefinition = "INT DEFAULT 0")
     private Integer viewCount;
 
-    @Column(columnDefinition = "DATETIME DEFAULT CURRENT_TIMESTAMP()")
+    @Column(nullable = false, columnDefinition = "DATETIME DEFAULT CURRENT_TIMESTAMP()")
     private LocalDateTime createdAt;
 
     @ManyToOne(optional = false)
+    @NotNull
     private Ward ward;
 
     @ManyToOne(optional = false)
+    @NotNull
     private User user;
 
     @ManyToMany

@@ -5,11 +5,16 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
+import lombok.extern.slf4j.Slf4j;
+
 @ControllerAdvice
+@Slf4j
 public class GeneralExceptionHandler {
 
     @ExceptionHandler({ Exception.class })
     public ResponseEntity<Object> handleException(Exception e) {
+        log.error("Internal Server Error", e);
+
         return ResponseEntity.status(500).body(
                 new ErrorResponse("Internal Server Error", "500", e.getMessage()));
     }

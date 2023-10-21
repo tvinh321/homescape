@@ -4,6 +4,7 @@ import { UserIcon } from "@heroicons/react/24/solid";
 import { AuthContext } from "../contexts/AuthContext";
 import { CSSTransition } from "react-transition-group";
 import "./Animations/style.css";
+import { baseURL } from "../axiosConfig";
 
 export default function Header() {
   const { user, setUser } = useContext(AuthContext);
@@ -53,7 +54,7 @@ export default function Header() {
                 {user ? (
                   <div className="relative">
                     <img
-                      src={user.avatar}
+                      src={baseURL + "/api/avatar/" + user?.id}
                       alt="avatar"
                       className="h-14 w-14 rounded-full cursor-pointer object-cover"
                       onClick={() => {
@@ -89,6 +90,12 @@ export default function Header() {
                         <a
                           href="#"
                           className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-700 hover:text-white"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            localStorage.removeItem("token");
+                            setUser(null);
+                            window.location.href = "/";
+                          }}
                         >
                           Đăng xuất
                         </a>

@@ -1,11 +1,51 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 
-export default function Login({ register, setRegister }) {
+import axios from "../../axiosConfig";
+import { AuthContext } from "../../contexts/AuthContext";
+
+export default function Login({ screen, setScreen }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const { user, setUser } = useContext(AuthContext);
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+
+    try {
+      const res = await axios.post("/api/login", {
+        email: email,
+        password: password,
+      });
+      if (res.data?.token) {
+        localStorage.setItem("token", res.data.token);
+
+        const res2 = await axios.get("/api/user/info", {
+          headers: { Authorization: `Bearer ${res.data.token}` },
+        });
+        setUser(res2.data);
+
+        window.location.href = "/";
+      }
+    } catch (err) {
+      if (err.response?.data?.message == "Email not found") {
+        setError("Email không tồn tại");
+      }
+      if (err.response?.data?.message == "Invalid password") {
+        setError("Mật khẩu không đúng");
+      }
+      if (err.response?.data?.message == "User not verified") {
+        setError("Tài khoản chưa được kích hoạt bằng email");
+      }
+    }
+
+    setLoading(false);
+  };
 
   return (
     <div className="flex flex-col justify-center items-center">
@@ -15,7 +55,10 @@ export default function Login({ register, setRegister }) {
           {error}
         </div>
       )}
-      <form className="flex flex-col justify-center items-center w-full">
+      <form
+        className="flex flex-col justify-center items-center w-full"
+        onSubmit={handleLogin}
+      >
         <input
           type="email"
           placeholder="Email"
@@ -31,12 +74,17 @@ export default function Login({ register, setRegister }) {
           onChange={(e) => setPassword(e.target.value)}
         />
         <button
+          type="button"
+          className="text-blue-800 hover:text-blue-900 font-bold mb-4"
+          onClick={() => setScreen("forgotPassword")}
+        >
+          Quên mật khẩu?
+        </button>
+        <button
           type="submit"
           className={
             "text-white font-bold py-2 px-4 rounded transition-all duration-150 flex justify-center items-center w-2/3 " +
-            (loading
-              ? "bg-blue-400"
-              : "bg-blue-800  hover:text-black hover:bg-blue-500")
+            (loading ? "bg-blue-900" : "bg-blue-800  hover:bg-blue-900")
           }
           disabled={loading}
         >
@@ -46,8 +94,8 @@ export default function Login({ register, setRegister }) {
       <div className="flex justify-center items-center mt-4">
         <p className="mr-2">Bạn chưa có tài khoản?</p>
         <button
-          className="text-blue-800 hover:text-blue-500 font-bold"
-          onClick={() => setRegister((prev) => !prev)}
+          className="text-blue-700 hover:text-blue-900 font-bold"
+          onClick={() => setScreen("register")}
         >
           Đăng ký
         </button>

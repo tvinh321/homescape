@@ -1,6 +1,7 @@
 package org.pltv.homescape.controller;
 
 import java.util.List;
+import java.util.UUID;
 
 import org.pltv.homescape.dto.ErrorResponse;
 import org.pltv.homescape.dto.SuccessReponse;
@@ -8,29 +9,32 @@ import org.pltv.homescape.dto.user.ChangePasswordReq;
 import org.pltv.homescape.dto.user.ForgetPasswordReq;
 import org.pltv.homescape.dto.user.LoginReq;
 import org.pltv.homescape.dto.user.LoginRes;
-import org.pltv.homescape.dto.user.MyPropertiesRes;
+import org.pltv.homescape.dto.property.PropertyListRes;
 import org.pltv.homescape.dto.user.RegisterReq;
 import org.pltv.homescape.dto.user.RegisterRes;
 import org.pltv.homescape.dto.user.ResetPasswordReq;
 import org.pltv.homescape.dto.user.UserInfoReq;
 import org.pltv.homescape.model.User;
 import org.pltv.homescape.service.JwtService;
-import org.pltv.homescape.service.PropertyService;
 import org.pltv.homescape.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
-
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -44,12 +48,9 @@ public class UserController {
     private UserService userService;
 
     @Autowired
-    private PropertyService propertyService;
+    private JwtService jwtService;
 
-    @Autowired
-    private JwtService JwtService;
-
-    @PostMapping("/api/user/login")
+    @PostMapping("/api/login")
     public ResponseEntity<Object> login(@RequestBody LoginReq loginPost) {
         if (loginPost.getEmail() == null || loginPost.getPassword() == null) {
             return ResponseEntity.badRequest()
@@ -69,7 +70,7 @@ public class UserController {
             if (authentication.isAuthenticated()) {
                 return ResponseEntity.ok().body(
                         new LoginRes(loginPost.getEmail(),
-                                JwtService.generateToken((User) authentication.getPrincipal())));
+                                jwtService.generateToken((User) authentication.getPrincipal())));
             } else {
                 log.error("Authentication failed");
                 return ResponseEntity.internalServerError()
@@ -79,17 +80,14 @@ public class UserController {
         } catch (BadCredentialsException e) {
             log.info(e.getMessage());
             return ResponseEntity.badRequest().body(ErrorResponse.builder().code("400").error("Bad Request")
-                    .message("Invalid email or password").build());
-        } catch (Exception e) {
-            log.error(e.getMessage());
-            return ResponseEntity.internalServerError()
-                    .body(ErrorResponse.builder().code("500").error("Internal Server Error").message(e.getMessage())
-                            .build());
+                    .message("Invalid password").build());
+        } catch (UsernameNotFoundException e) {
+            return ResponseEntity.badRequest().body(ErrorResponse.builder().code("400").error("Bad Request")
+                    .message("Email not found").build());
         }
-
     }
 
-    @PostMapping("/api/user/register")
+    @PostMapping("/api/register")
     public ResponseEntity<Object> register(@RequestBody RegisterReq registerPost) {
         if (registerPost.getEmail() == null || registerPost.getPassword() == null
                 || registerPost.getConfirmPassword() == null) {
@@ -102,44 +100,30 @@ public class UserController {
                     .message("Passwords don't match").build());
         }
 
-        try {
-            userService.register(registerPost);
-            return ResponseEntity.ok().body(new RegisterRes(registerPost.getEmail(), "Registration successful"));
-        } catch (Exception e) {
-            log.error(e.getMessage());
-            return ResponseEntity.internalServerError()
-                    .body(ErrorResponse.builder().code("500").error("Internal Server Error").message(e.getMessage())
-                            .build());
-        }
+        userService.register(registerPost);
+        return ResponseEntity.ok().body(new RegisterRes(registerPost.getEmail(), "Registration successful"));
 
     }
 
-    @GetMapping("/api/user/verify/{token}")
+    @GetMapping("/api/verify/{token}")
     public ResponseEntity<Object> verify(@PathVariable("token") String token) throws Exception {
         userService.verifyEmail(token);
         return ResponseEntity.ok().body(SuccessReponse.builder().message("Email verified").build());
     }
 
-    @PostMapping("/api/user/forgot")
-    public ResponseEntity<Object> forgotPassword(@RequestBody ForgetPasswordReq forgetPasswordReq) {
+    @PostMapping("/api/forgotPassword")
+    public ResponseEntity<Object> forgotPassword(@RequestBody ForgetPasswordReq forgetPasswordReq) throws Exception {
         if (forgetPasswordReq.getEmail() == null) {
             return ResponseEntity.badRequest()
                     .body(ErrorResponse.builder().code("400").error("Bad Request").message("Missing field").build());
         }
 
-        try {
-            return ResponseEntity.ok().body(SuccessReponse.builder().message("Email sent")
-                    .data(userService.forgotPassword(forgetPasswordReq.getEmail())).build());
-        } catch (Exception e) {
-            log.error(e.getMessage());
-            return ResponseEntity.internalServerError()
-                    .body(ErrorResponse.builder().code("500").error("Internal Server Error").message(e.getMessage())
-                            .build());
-        }
+        return ResponseEntity.ok().body(SuccessReponse.builder().message("Email sent")
+                .data(userService.forgotPassword(forgetPasswordReq.getEmail())).build());
     }
 
-    @PostMapping("/api/user/reset")
-    public ResponseEntity<Object> resetPassword(@RequestBody ResetPasswordReq resetPasswordPost) {
+    @PostMapping("/api/resetPassword")
+    public ResponseEntity<Object> resetPassword(@RequestBody ResetPasswordReq resetPasswordPost) throws Exception {
         if (resetPasswordPost.getNewPassword() == null || resetPasswordPost.getConfirmPassword() == null) {
             return ResponseEntity.badRequest()
                     .body(ErrorResponse.builder().code("400").error("Bad Request").message("Missing field").build());
@@ -150,15 +134,9 @@ public class UserController {
                     .message("Passwords don't match").build());
         }
 
-        try {
-            userService.resetPassword(resetPasswordPost.getToken(), resetPasswordPost.getNewPassword());
-            return ResponseEntity.ok().body(SuccessReponse.builder().message("Password reset successful").build());
-        } catch (Exception e) {
-            log.error(e.getMessage());
-            return ResponseEntity.internalServerError()
-                    .body(ErrorResponse.builder().code("500").error("Internal Server Error").message(e.getMessage())
-                            .build());
-        }
+        userService.resetPassword(resetPasswordPost.getToken(), resetPasswordPost.getNewPassword());
+        return ResponseEntity.ok().body(SuccessReponse.builder().message("Password reset successful").build());
+
     }
 
     @PostMapping("/api/user/changePassword")
@@ -182,16 +160,10 @@ public class UserController {
                     .message("Passwords don't match").build());
         }
 
-        try {
-            userService.changePassword(email, changePasswordPost.getOldPassword(),
-                    changePasswordPost.getNewPassword());
-            return ResponseEntity.ok().body(SuccessReponse.builder().message("Password changed").build());
-        } catch (Exception e) {
-            log.error(e.getMessage());
-            return ResponseEntity.internalServerError()
-                    .body(ErrorResponse.builder().code("500").error("Internal Server Error").message(e.getMessage())
-                            .build());
-        }
+        userService.changePassword(email, changePasswordPost.getOldPassword(),
+                changePasswordPost.getNewPassword());
+        return ResponseEntity.ok().body(SuccessReponse.builder().message("Password changed").build());
+
     }
 
     @GetMapping("/api/user/info")
@@ -199,15 +171,8 @@ public class UserController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getPrincipal().toString();
 
-        try {
-            return ResponseEntity.ok().body(SuccessReponse.builder().message("User info")
-                    .data(userService.getUserInfo(email)).build());
-        } catch (Exception e) {
-            log.error(e.getMessage());
-            return ResponseEntity.internalServerError()
-                    .body(ErrorResponse.builder().code("500").error("Internal Server Error").message(e.getMessage())
-                            .build());
-        }
+        return ResponseEntity.ok().body(SuccessReponse.builder().message("User info")
+                .data(userService.getUserInfo(email)).build());
     }
 
     @PostMapping("/api/user/info")
@@ -220,15 +185,8 @@ public class UserController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getPrincipal().toString();
 
-        try {
-            return ResponseEntity.ok().body(SuccessReponse.builder().message("User info updated")
-                    .data(userService.updateUserInfo(info, email)).build());
-        } catch (Exception e) {
-            log.error(e.getMessage());
-            return ResponseEntity.internalServerError()
-                    .body(ErrorResponse.builder().code("500").error("Internal Server Error").message(e.getMessage())
-                            .build());
-        }
+        return ResponseEntity.ok().body(SuccessReponse.builder().message("User info updated")
+                .data(userService.updateUserInfo(info, email)).build());
     }
 
     @GetMapping("/api/user/myProperties")
@@ -236,7 +194,7 @@ public class UserController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getPrincipal().toString();
 
-        List<MyPropertiesRes> myProperties = userService.getProperties(email);
+        List<PropertyListRes> myProperties = userService.getProperties(email);
         return ResponseEntity.ok().body(SuccessReponse.builder().message("My properties").data(myProperties).build());
     }
 
@@ -245,7 +203,7 @@ public class UserController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getPrincipal().toString();
 
-        List<MyPropertiesRes> myProperties = userService.getFavoritesProperties(email);
+        List<PropertyListRes> myProperties = userService.getFavoritesProperties(email);
         return ResponseEntity.ok()
                 .body(SuccessReponse.builder().message("My favorite properties").data(myProperties).build());
     }
@@ -266,5 +224,26 @@ public class UserController {
 
         userService.removeFromFavorite(email, id);
         return ResponseEntity.ok().body(SuccessReponse.builder().message("Favorite removed").build());
+    }
+
+    @GetMapping("/api/avatar/{id}")
+    public ResponseEntity<Resource> getAvatar(@PathVariable("id") UUID id) {
+        Resource file = userService.getAvatar(id);
+        if (file == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getFilename() + "\"")
+                .body(file);
+    }
+
+    @PostMapping("/api/user/avatar")
+    public ResponseEntity<Object> uploadAvatar(@ModelAttribute MultipartFile file) throws Exception {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getPrincipal().toString();
+
+        userService.saveAvatar(file, email);
+        return ResponseEntity.ok().body(SuccessReponse.builder().message("Avatar uploaded").build());
     }
 }

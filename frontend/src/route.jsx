@@ -11,26 +11,24 @@ import Search from "./pages/Search";
 import PostProperty from "./pages/PostProperty";
 import ViewProperty from "./pages/ViewProperty";
 import EditProperty from "./pages/EditProperty";
+import axios from "./axiosConfig";
 
 export default function PageRoute() {
   const [user, setUser] = useState(null);
 
   // Check if user is logged in using HttpOnly cookie
   useEffect(() => {
-    // axios.get("/api/auth/check").then((res) => {
-    //   if (res.data.user) {
-    //     setUser(res.data.user);
-    //   }
-    // });
-    setUser({
-      id: 1,
-      avatar: "https://picsum.photos/200/300",
-      name: "Nguyễn Văn A",
-      email: "nguyenvana@email.com",
-      phone: "0123456789",
-      address: "123 Đường ABC, Quận XYZ, TP. HCM",
-      role: "user",
-    });
+    const checkLoggedIn = async () => {
+      const token = localStorage.getItem("token");
+      if (token) {
+        const res = await axios.get("/api/user/info", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        setUser(res.data?.data);
+      }
+    };
+    checkLoggedIn();
   }, []);
 
   return (

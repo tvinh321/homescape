@@ -52,7 +52,7 @@ public class WebSecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests(
-                auth -> auth.requestMatchers("/api/user/myProperties").authenticated().anyRequest().permitAll())
+                auth -> auth.requestMatchers("/api/user/**").authenticated().anyRequest().permitAll())
                 .cors(cors -> {
                     cors.configurationSource(request -> {
                         var corsConfiguration = new CorsConfiguration();

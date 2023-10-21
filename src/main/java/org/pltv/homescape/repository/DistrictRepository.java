@@ -8,5 +8,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface DistrictRepository extends JpaRepository<District, Long> {
-    public List<District> findByCityId(Long cityId);
+    List<District> findByCityId(Long cityId);
 }

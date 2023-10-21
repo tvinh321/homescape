@@ -6,45 +6,17 @@ import ReactPaginate from "react-paginate";
 
 import { HeartIcon } from "@heroicons/react/24/outline";
 
-const mockData = [
-  {
-    id: 1,
-    title: "Bán nhà mặt tiền đường Nguyễn Văn Cừ, Quận 5",
-    price: 1000000000,
-    area: 100,
-    location: "Quận 5, TP. Hồ Chí Minh",
-    image: "https://picsum.photos/1920/1080",
-    favorite: true,
-  },
-  {
-    id: 2,
-    title: "Bán nhà mặt tiền đường Nguyễn Văn Cừ, Quận 5",
-    price: 1000000000,
-    area: 100,
-    location: "Quận 5, TP. Hồ Chí Minh",
-    image: "https://picsum.photos/1920/1080",
-    favorite: false,
-  },
-  {
-    id: 3,
-    title: "Bán nhà mặt tiền đường Nguyễn Văn Cừ, Quận 5",
-    price: 1000000000,
-    area: 100,
-    location: "Quận 5, TP. Hồ Chí Minh",
-    image: "https://picsum.photos/1920/1080",
-    favorite: true,
-  },
-];
+import { sortOptions } from "../../constants/properties";
 
 export default function SearchResults() {
   const searchParams = new URLSearchParams(window.location.search);
   const { user } = useContext(AuthContext);
 
-  const [searchResults, setSearchResults] = useState(mockData);
-  const [sortedResults, setSortedResults] = useState(mockData);
+  const [searchResults, setSearchResults] = useState([]);
+  const [sortedResults, setSortedResults] = useState([]);
   const [itemList] = useState([]);
   const [sortOption, setSortOption] = useState(
-    searchParams.get("sort") || "priority"
+    searchParams.get("sort") || "popular"
   );
   const [page, setPage] = useState(searchParams.get("page") || 1);
   const [totalPage, setTotalPage] = useState(1);
@@ -68,7 +40,6 @@ export default function SearchResults() {
       ? searchParams.get("type").split(",")
       : null;
     const bedroom = searchParams.get("bedroom");
-    const bathroom = searchParams.get("bathroom");
     const paging = searchParams.get("page");
     const sort = sortOption;
 
@@ -78,7 +49,6 @@ export default function SearchResults() {
       area: area,
       type: type,
       bedroom: bedroom,
-      bathroom: bathroom,
       sort: sort,
     };
 
@@ -91,12 +61,16 @@ export default function SearchResults() {
     }
 
     axios
-      .post(`/api/properties${paging ? "?page=" + paging : ""}`, postForm, {
-        headers: user?.token && { Authorization: `Bearer ${user.token}` },
-      })
+      .post(
+        `/api/property/query${paging ? "?page=" + paging : "?page=1"}`,
+        postForm,
+        {
+          headers: user?.token && { Authorization: `Bearer ${user.token}` },
+        }
+      )
       .then((response) => {
-        setSearchResults(response.data.properties?.data);
-        setSortedResults(response.data.properties?.data);
+        setSearchResults(response.data?.data);
+        setSortedResults(response.data?.data);
 
         setTotalResult(response.data.properties?.total);
         setTotalPage(response.data.properties?.last_page);
@@ -123,11 +97,13 @@ export default function SearchResults() {
               setPage(1);
             }}
           >
-            <option value="priority">Mặc định</option>
-            <option value="price-asc">Giá tăng dần</option>
-            <option value="price-desc">Giá giảm dần</option>
-            <option value="area-asc">Diện tích tăng dần</option>
-            <option value="area-desc">Diện tích giảm dần</option>
+            {sortOptions.map((option, index) => {
+              return (
+                <option key={index} value={option.value}>
+                  {option.name}
+                </option>
+              );
+            })}
           </select>
         </div>
       </div>
@@ -153,7 +129,7 @@ export default function SearchResults() {
                         {house.title}
                       </div>
                       <p className="text-gray-700 text-sm">
-                        {house.area} m<sup>2</sup>
+                        {house.area?.toFixed(1)} m<sup>2</sup>
                       </p>
                       <p className="text-red-600 font-semibold">
                         {(house.price / 1000000000).toFixed(1)} tỷ

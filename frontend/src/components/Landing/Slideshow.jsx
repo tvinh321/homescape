@@ -39,9 +39,9 @@ export default function Slideshow() {
               src={image === 1 ? Image1 : image === 2 ? Image2 : Image3}
               alt="Landing Image"
               className="absolute w-full h-fit object-cover -z-10"
-              // style={{
-              //     animation: "slowScroll 10s linear infinite",
-              // }}
+              style={{
+                animation: "slowScroll 10s linear infinite",
+              }}
             />
           </CSSTransition>
         </TransitionGroup>

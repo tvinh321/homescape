@@ -14,3 +14,20 @@ export const directionsList = [
   { id: 6, name: "Đông Nam", value: "dongnam" },
   { id: 7, name: "Tây Nam", value: "taynam" },
 ];
+
+export const bedroomList = [
+  { id: 0, name: "1", value: "1" },
+  { id: 1, name: "2", value: "2" },
+  { id: 2, name: "3", value: "3" },
+  { id: 3, name: "4", value: "4" },
+  { id: 4, name: "5+", value: "5+" },
+];
+
+export const sortOptions = [
+  { id: 0, name: "Lượt xem cao nhất", value: "popular" },
+  { id: 1, name: "Mới nhất", value: "newest" },
+  { id: 2, name: "Giá tăng dần", value: "price_asc" },
+  { id: 3, name: "Giá giảm dần", value: "price_desc" },
+  { id: 4, name: "Diện tích tăng dần", value: "area_asc" },
+  { id: 5, name: "Diện tích giảm dần", value: "area_desc" },
+];

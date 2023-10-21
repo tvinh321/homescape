@@ -1,10 +1,14 @@
 package org.pltv.homescape.service;
 
+import java.io.File;
 import java.util.List;
+import java.util.UUID;
 
-import org.pltv.homescape.dto.user.MyPropertiesRes;
+import org.pltv.homescape.dto.property.PropertyAuthorRes;
+import org.pltv.homescape.dto.property.PropertyListRes;
 import org.pltv.homescape.dto.user.RegisterReq;
 import org.pltv.homescape.dto.user.UserInfoReq;
+import org.pltv.homescape.dto.user.UserInfoRes;
 import org.pltv.homescape.model.User;
 import org.pltv.homescape.model.Ward;
 import org.pltv.homescape.model.Property;
@@ -12,11 +16,15 @@ import org.pltv.homescape.repository.PropertyRepository;
 import org.pltv.homescape.repository.UserRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -28,9 +36,6 @@ public class UserService implements UserDetailsService {
     private UserRepository userRepo;
 
     @Autowired
-    private PropertyRepository propertyRepo;
-
-    @Autowired
     private PasswordEncoder passwordEncoder;
 
     @Autowired
@@ -40,11 +45,25 @@ public class UserService implements UserDetailsService {
     private LocationService locationService;
 
     @Autowired
+    private FileService fileService;
+
+    @Autowired
+    @Lazy
     private PropertyService propertyService;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = userRepo.findByEmail(username);
+        if (user == null) {
+            log.error("User not found");
+            throw new UsernameNotFoundException("User not found");
+        }
+
+        return user;
+    }
+
+    public User getUserByEmail(String email) {
+        User user = userRepo.findByEmail(email);
         if (user == null) {
             log.error("User not found");
             throw new UsernameNotFoundException("User not found");
@@ -77,7 +96,7 @@ public class UserService implements UserDetailsService {
         User user = userRepo.findByEmail(email);
         if (user == null) {
             log.error("User not found");
-            return false;
+            throw new UsernameNotFoundException("User not found");
         }
 
         return user.getStatus() == 1;
@@ -130,6 +149,9 @@ public class UserService implements UserDetailsService {
         }
 
         UserInfoReq userInfo = new UserInfoReq();
+        userInfo.setId(user.getId());
+        userInfo.setAvatar(user.getAvatar());
+        userInfo.setEmail(user.getEmail());
         userInfo.setName(user.getName());
         userInfo.setPhone(user.getPhone());
         userInfo.setStreet(user.getStreet());
@@ -137,7 +159,7 @@ public class UserService implements UserDetailsService {
         return userInfo;
     }
 
-    public UserInfoReq updateUserInfo(UserInfoReq info, String email) {
+    public UserInfoRes updateUserInfo(UserInfoReq info, String email) {
         User user = userRepo.findByEmail(email);
         if (user == null) {
             log.error("User not found");
@@ -156,10 +178,16 @@ public class UserService implements UserDetailsService {
         user.setWard(ward);
 
         userRepo.save(user);
-        return info;
+
+        return UserInfoRes.builder()
+                .name(user.getName())
+                .phone(user.getPhone())
+                .street(user.getStreet())
+                .ward(user.getWard().getId())
+                .build();
     }
 
-    public List<MyPropertiesRes> getProperties(String email) {
+    public List<PropertyListRes> getProperties(String email) {
         User user = userRepo.findByEmail(email);
         if (user == null) {
             log.error("User not found");
@@ -167,10 +195,10 @@ public class UserService implements UserDetailsService {
         }
 
         List<Property> properties = user.getProperties();
-        return propertyService.convertToMyPropertiesRes(properties);
+        return propertyService.convertToPropertyListRes(properties, email);
     }
 
-    public List<MyPropertiesRes> getFavoritesProperties(String email) {
+    public List<PropertyListRes> getFavoritesProperties(String email) {
         User user = userRepo.findByEmail(email);
         if (user == null) {
             log.error("User not found");
@@ -178,7 +206,7 @@ public class UserService implements UserDetailsService {
         }
 
         List<Property> properties = user.getFavoriteProperties();
-        return propertyService.convertToMyPropertiesRes(properties);
+        return propertyService.convertToPropertyListRes(properties, email);
     }
 
     public void addToFavorite(String email, Long propertyId) {
@@ -198,7 +226,7 @@ public class UserService implements UserDetailsService {
         property.getFavoriteUsers().add(user);
 
         userRepo.save(user);
-        propertyRepo.save(property);
+        propertyService.saveProperty(property);
     }
 
     public void removeFromFavorite(String email, Long propertyId) {
@@ -218,6 +246,60 @@ public class UserService implements UserDetailsService {
         property.getFavoriteUsers().remove(user);
 
         userRepo.save(user);
-        propertyRepo.save(property);
+        propertyService.saveProperty(property);
+    }
+
+    public PropertyAuthorRes changeToPropertyAuthorRes(User user) {
+        return PropertyAuthorRes.builder()
+                .id(user.getId())
+                .name(user.getName())
+                .phone(user.getPhone())
+                .email(user.getEmail())
+                .build();
+    }
+
+    public Resource getAvatar(UUID id) {
+        User user = userRepo.findById(id).orElse(null);
+        if (user == null) {
+            log.error("User not found");
+            throw new UsernameNotFoundException("User not found");
+        }
+
+        File file = new File("avatars/" + user.getAvatar());
+        if (file.exists()) {
+            return new FileSystemResource(file);
+        }
+        return null;
+    }
+
+    public void saveAvatar(MultipartFile file, String email) {
+        User user = userRepo.findByEmail(email);
+        if (user == null) {
+            log.error("User not found");
+            throw new UsernameNotFoundException("User not found");
+        }
+
+        String fileExtension = fileService.getFileExtension(file);
+
+        if (fileExtension == null) {
+            log.error("File extension is not supported");
+            throw new IllegalArgumentException("File extension is not supported");
+        }
+
+        String fileName = user.getId() + "." + fileExtension;
+
+        // Save file to local storage
+        java.io.File dest = new java.io.File(
+                "avatars/" + fileName);
+        dest = dest.getAbsoluteFile();
+        try {
+            file.transferTo(dest);
+        } catch (Exception e) {
+            log.error("Error when saving file");
+            throw new IllegalArgumentException("Error when saving file");
+        }
+
+        user.setAvatar(fileName);
+        userRepo.save(user);
     }
 }

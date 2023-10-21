@@ -1,4 +1,4 @@
-package org.pltv.homescape.dto.user;
+package org.pltv.homescape.dto.property;
 
 import java.util.UUID;
 
@@ -11,12 +11,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class UserInfoReq {
+public class PropertyAuthorRes {
     private UUID id;
-    private String avatar;
-    private String email;
     private String name;
     private String phone;
-    private String street;
-    private Long ward;
+    private String email;
 }

@@ -20,6 +20,7 @@ import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -35,18 +36,21 @@ public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
-    @ManyToOne(optional = false, cascade = CascadeType.ALL)
-    private File avatar;
+    @Column(nullable = false, columnDefinition = "VARCHAR(64) DEFAULT 'default.png'")
+    @Builder.Default
+    private String avatar = "default.png";
     @Pattern(regexp = "^[\\p{L} ]+$", message = "Name is not valid")
     @Column(length = 32)
     private String name;
     @Email(message = "Email is not valid")
     private String email;
-    @Column(length = 60)
+    @Column(length = 60, nullable = false)
     private String password;
     @Pattern(regexp = "^$|^[0-9]+$", message = "Phone is not valid")
     private String phone;
     private String street;
+
+    @Column(nullable = false, columnDefinition = "TINYINT(1) DEFAULT 0")
     private Byte status;
 
     @ManyToOne(optional = true, cascade = CascadeType.ALL)
@@ -55,7 +59,7 @@ public class User implements UserDetails {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Property> properties;
 
-    @ManyToMany(mappedBy = "favoriteUsers")
+    @ManyToMany(mappedBy = "favoriteUsers", cascade = CascadeType.ALL)
     private List<Property> favoriteProperties;
 
     @Override

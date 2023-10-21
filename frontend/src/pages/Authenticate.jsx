@@ -2,6 +2,8 @@ import React, { useState } from "react";
 
 import Login from "../components/Authenticate/Login";
 import Register from "../components/Authenticate/Register";
+import ForgotPassword from "../components/Authenticate/ForgotPassword";
+
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 
@@ -9,7 +11,7 @@ import AuthImg from "../assets/AuthImg.jpg";
 import { CSSTransition, SwitchTransition } from "react-transition-group";
 
 export default function Authenticate() {
-  const [register, setRegister] = useState(false);
+  const [screen, setScreen] = useState("login");
 
   return (
     <>
@@ -22,15 +24,17 @@ export default function Authenticate() {
         />
         <SwitchTransition>
           <CSSTransition
-            key={register}
+            key={screen}
             timeout={150}
             classNames="fade"
             unmountOnExit={false}
           >
-            {register ? (
-              <Register setRegister={setRegister} />
+            {screen == "register" ? (
+              <Register setScreen={setScreen} />
+            ) : screen == "login" ? (
+              <Login setScreen={setScreen} />
             ) : (
-              <Login setRegister={setRegister} />
+              <ForgotPassword setScreen={setScreen} />
             )}
           </CSSTransition>
         </SwitchTransition>

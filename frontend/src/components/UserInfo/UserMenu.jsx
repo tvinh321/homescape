@@ -8,6 +8,7 @@ import {
 } from "@heroicons/react/24/outline";
 
 import { AuthContext } from "../../contexts/AuthContext";
+import { baseURL } from "../../axiosConfig";
 
 export default function UserMenu({ selected, setSelected }) {
   const { user, setUser } = useContext(AuthContext);
@@ -15,12 +16,12 @@ export default function UserMenu({ selected, setSelected }) {
   return (
     <div className="w-1/5 h-full">
       <img
-        src={user?.avatar}
+        src={baseURL + "/api/avatar/" + user?.id}
         alt="avatar"
         className="rounded-full w-32 h-32 mx-auto my-10 object-cover"
       />
       <div className="text-center">
-        <h1 className="text-2xl font-bold">Nguyễn Văn A</h1>
+        <h1 className="text-2xl font-bold">{user?.name}</h1>
       </div>
       <div className="mt-5">
         <ul className="flex flex-col">
@@ -46,7 +47,9 @@ export default function UserMenu({ selected, setSelected }) {
           <li
             className={
               "hover:bg-blue-700 hover:text-white px-4 py-4 transition-all duration-200" +
-              (selected === "thay-doi-mat-khau" ? " bg-blue-700 text-white" : "")
+              (selected === "thay-doi-mat-khau"
+                ? " bg-blue-700 text-white"
+                : "")
             }
           >
             <a
