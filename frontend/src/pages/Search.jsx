@@ -8,7 +8,7 @@ export default function Search() {
   return (
     <>
       <Header />
-      <div>
+      <div className="flex flex-col items-center">
         <SearchOption />
         <SearchResults />
       </div>

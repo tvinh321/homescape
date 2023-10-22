@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.UUID;
 
 import org.pltv.homescape.model.Property;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -39,7 +41,7 @@ public interface PropertyRepository extends JpaRepository<Property, Long> {
                         "   CASE WHEN :sort = 'price_desc' THEN p.price END DESC, " +
                         "   CASE WHEN :sort = 'area_asc' THEN p.area END ASC, " +
                         "   CASE WHEN :sort = 'area_desc' THEN p.area END DESC")
-        List<Property> searchProperties(
+        Page<Property> searchProperties(
                         @Param("title") String title,
                         @Param("type") List<String> type,
                         @Param("cityId") Long cityId,
@@ -49,9 +51,13 @@ public interface PropertyRepository extends JpaRepository<Property, Long> {
                         @Param("upperPrice") Double upperPrice,
                         @Param("lowerArea") Double lowerArea,
                         @Param("upperArea") Double upperArea,
-                        @Param("bedroom") List<String> bedroom,
+                        @Param("bedroom") List<Byte> bedroom,
                         @Param("bedroomMoreThan5") Boolean bedroomMoreThan5,
                         @Param("direction") List<String> direction,
                         @Param("sort") String sort,
                         Pageable pageable);
+
+        Page<Property> findByUserId(UUID userId, PageRequest of);
+
+        Page<Property> findByFavoriteUsersId(UUID userId, PageRequest of);
 }

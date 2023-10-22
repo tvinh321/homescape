@@ -11,6 +11,7 @@ import org.pltv.homescape.dto.user.ForgetPasswordReq;
 import org.pltv.homescape.dto.user.LoginReq;
 import org.pltv.homescape.dto.user.LoginRes;
 import org.pltv.homescape.dto.property.PropertyListRes;
+import org.pltv.homescape.dto.property.PropertyQueryRes;
 import org.pltv.homescape.dto.user.RegisterReq;
 import org.pltv.homescape.dto.user.RegisterRes;
 import org.pltv.homescape.dto.user.ResetPasswordReq;
@@ -35,6 +36,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -204,11 +206,6 @@ public class UserController {
 
     @PostMapping("/api/user/info")
     public ResponseEntity<Object> changeInfo(@RequestBody UserInfoReq info) {
-        if (info.getName() == null || info.getPhone() == null || info.getStreet() == null || info.getWard() == null) {
-            return ResponseEntity.badRequest()
-                    .body(ErrorResponse.builder().code("400").error("Bad Request").message("Missing field").build());
-        }
-
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getPrincipal().toString();
 
@@ -217,20 +214,20 @@ public class UserController {
     }
 
     @GetMapping("/api/user/myProperties")
-    public ResponseEntity<Object> getMyProperties() {
+    public ResponseEntity<Object> getMyProperties(@RequestParam("page") int page) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getPrincipal().toString();
 
-        List<PropertyListRes> myProperties = userService.getProperties(email);
+        PropertyQueryRes myProperties = userService.getProperties(email, page);
         return ResponseEntity.ok().body(SuccessReponse.builder().message("My properties").data(myProperties).build());
     }
 
     @GetMapping("/api/user/myFavorites")
-    public ResponseEntity<Object> getMyFavorites() {
+    public ResponseEntity<Object> getMyFavorites(@RequestParam("page") int page) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getPrincipal().toString();
 
-        List<PropertyListRes> myProperties = userService.getFavoritesProperties(email);
+        PropertyQueryRes myProperties = userService.getFavoritesProperties(email, page);
         return ResponseEntity.ok()
                 .body(SuccessReponse.builder().message("My favorite properties").data(myProperties).build());
     }

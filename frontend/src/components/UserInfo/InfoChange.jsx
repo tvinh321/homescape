@@ -6,16 +6,18 @@ import axios from "../../axiosConfig";
 
 export default function InfoChange() {
   const { user } = useContext(AuthContext);
+  const token = localStorage.getItem("token");
 
   const [userInfo, setUserInfo] = useState({
     name: "",
-    email: "",
     phone: "",
+    ward: "",
+    street: "",
   });
 
   const [error, setError] = useState({
+    serverError: "",
     name: "",
-    email: "",
     phone: "",
   });
 
@@ -37,9 +39,15 @@ export default function InfoChange() {
     }
 
     axios
-      .get(`/api/user/info`)
+      .get(`/api/user/info`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
       .then((res) => {
-        console.log(res.data);
+        setUserInfo(res.data.data);
+        setStreet(res.data.data.street);
+        setWard(res.data.data.ward);
+        setDistrict(res.data.data.district);
+        setCity(res.data.data.city);
       })
       .catch((err) => {
         console.log(err);
@@ -50,20 +58,22 @@ export default function InfoChange() {
     if (!ranOnce.current) {
       ranOnce.current = true;
       axios.get("/api/location/cities").then((res) => {
-        setCities(res.data.cities);
+        setCities(res.data);
       });
     }
   }, []);
 
   useEffect(() => {
+    if (!city) return;
     axios.get(`/api/location/districts/${city}`).then((res) => {
-      setDistricts(res.data.districts);
+      setDistricts(res.data);
     });
   }, [city]);
 
   useEffect(() => {
+    if (!district) return;
     axios.get(`/api/location/wards/${district}`).then((res) => {
-      setWards(res.data.wards);
+      setWards(res.data);
     });
   }, [district]);
 
@@ -71,18 +81,52 @@ export default function InfoChange() {
     let address = [];
 
     street && address.push(street);
-    ward && address.push(ward);
-    district && address.push(district);
-    city && address.push(city);
+    ward && address.push(wards.find((wardItem) => wardItem.id == ward)?.name);
+    district &&
+      address.push(
+        districts.find((districtItem) => districtItem.id == district)?.name
+      );
+    city && address.push(cities.find((cityItem) => cityItem.id == city)?.name);
 
     setAddress(address.join(", "));
-  }, [street, ward, district, city]);
+  }, [street, ward, district, city, wards, districts, cities]);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    let submit = {
+      name: userInfo.name,
+      phone: userInfo.phone,
+      ward: ward,
+      street: street,
+    };
+
+    axios
+      .post("/api/user/info", submit, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      .then((res) => {
+        setError({ name: "", phone: "" });
+        window.location.reload();
+      })
+      .catch((err) => {
+        setError({ ...error, serverError: err.response.data.message });
+      });
+  };
 
   return (
     <div className="bg-white h-full pt-16 pb-16">
       <div className="flex flex-col items-center">
         <h1 className="text-2xl font-semibold mb-8">Thông tin cá nhân</h1>
-        <form className="flex flex-col w-full items-center">
+        {error.serverError && (
+          <div className="bg-red-200 text-red-700 px-8 py-4 mb-4 w-2/3 text-center font-semibold">
+            {error.serverError}
+          </div>
+        )}
+        <form
+          className="flex flex-col w-full items-center"
+          onSubmit={handleSubmit}
+        >
           <div className="flex flex-col w-2/5">
             <label htmlFor="name" className="font-semibold mb-1">
               Họ và tên
@@ -98,21 +142,6 @@ export default function InfoChange() {
               }
             />
             {error.name && <div className="text-red-500">{error.name}</div>}
-
-            <label htmlFor="email" className="font-semibold mb-1">
-              Email
-            </label>
-            <input
-              type="email"
-              name="email"
-              id="email"
-              className="border rounded-md py-2 px-2 mb-2"
-              value={userInfo.email}
-              onChange={(e) =>
-                setUserInfo({ ...userInfo, email: e.target.value })
-              }
-            />
-            {error.email && <div className="text-red-500">{error.email}</div>}
 
             <label htmlFor="phone" className="font-semibold mb-1">
               Số điện thoại
@@ -143,7 +172,7 @@ export default function InfoChange() {
               >
                 <option value="">Chọn thành phố</option>
                 {cities.map((city) => (
-                  <option key={city.id} value={city.name}>
+                  <option key={city.id} value={city.id}>
                     {city.name}
                   </option>
                 ))}
@@ -158,7 +187,7 @@ export default function InfoChange() {
               >
                 <option value="">Chọn quận/huyện</option>
                 {districts.map((district) => (
-                  <option key={district.id} value={district.name}>
+                  <option key={district.id} value={district.id}>
                     {district.name}
                   </option>
                 ))}
@@ -173,7 +202,7 @@ export default function InfoChange() {
               >
                 <option value="">Chọn phường/xã</option>
                 {wards.map((ward) => (
-                  <option key={ward.id} value={ward.name}>
+                  <option key={ward.id} value={ward.id}>
                     {ward.name}
                   </option>
                 ))}

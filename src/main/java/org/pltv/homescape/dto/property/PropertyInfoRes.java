@@ -27,4 +27,8 @@ public class PropertyInfoRes {
     private List<PropertyFileRes> files;
     private PropertyAuthorRes author;
     private Boolean favorite;
+    private Long city;
+    private Long district;
+    private Long ward;
+    private String street;
 }

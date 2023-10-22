@@ -8,11 +8,15 @@ import { typesList, directionsList } from "../constants/properties";
 import { PlusIcon, XMarkIcon } from "@heroicons/react/24/solid";
 import { PlusCircleIcon } from "@heroicons/react/24/outline";
 
-import axios from "../axiosConfig";
+import axios, { baseURL } from "../axiosConfig";
+
+import { useParams } from "react-router-dom";
 
 export default function PostProperty() {
+  const { id } = useParams();
+  const token = localStorage.getItem("token");
+
   const [title, setTitle] = useState("");
-  const [address, setAddress] = useState("");
   const [street, setStreet] = useState("");
   const [city, setCity] = useState("");
   const [district, setDistrict] = useState("");
@@ -33,39 +37,68 @@ export default function PostProperty() {
   const [districts, setDistricts] = useState([]);
   const [wards, setWards] = useState([]);
 
+  const [loading, setLoading] = useState(false);
+
   const ranOnce = useRef(false);
 
   useEffect(() => {
     if (!ranOnce.current) {
       ranOnce.current = true;
       axios.get("/api/location/cities").then((res) => {
-        setCities(res.data.cities);
+        setCities(res.data);
+      });
+
+      axios.get("/api/property/" + id).then((res) => {
+        const property = res.data.data;
+        setTitle(property.title);
+        setStreet(property.street);
+        setCity(property.city);
+        setDistrict(property.district);
+        setWard(property.ward);
+        setDescription(property.description);
+        setType(property.type);
+        setDirection(property.direction);
+        setPrice(property.price);
+        setArea(property.area);
+        setBedroom(property.bedroom);
+        setBathroom(property.bathroom);
+        setFloor(property.floor);
+
+        property.files.forEach((file) => {
+          if (file.type != "video") {
+            axios
+              .get(baseURL + "/api/property/file/" + file.url, {
+                responseType: "blob",
+              })
+              .then((res) => {
+                const imageFile = new File([res.data], "image.jpg", {
+                  type: "image/jpeg",
+                });
+                if (file.type == "image") images.push(imageFile);
+                else if (file.type == "pano") panorama.push(imageFile);
+              });
+          } else {
+            videos.push({
+              id: videos.length,
+              url: file.url,
+            });
+          }
+        });
       });
     }
-  }, []);
+  });
 
   useEffect(() => {
     axios.get(`/api/location/districts/${city}`).then((res) => {
-      setDistricts(res.data.districts);
+      setDistricts(res.data);
     });
   }, [city]);
 
   useEffect(() => {
     axios.get(`/api/location/wards/${district}`).then((res) => {
-      setWards(res.data.wards);
+      setWards(res.data);
     });
   }, [district]);
-
-  useEffect(() => {
-    let address = [];
-
-    street && address.push(street);
-    ward && address.push(ward);
-    district && address.push(district);
-    city && address.push(city);
-
-    setAddress(address.join(", "));
-  }, [street, ward, district, city]);
 
   const checkValid = () => {
     if (!title) {
@@ -73,7 +106,7 @@ export default function PostProperty() {
       return false;
     }
 
-    if (!address || !street || !city || !district || !ward) {
+    if (!street || !city || !district || !ward) {
       alert("Vui lòng nhập đầy đủ địa chỉ");
       return false;
     }
@@ -130,9 +163,88 @@ export default function PostProperty() {
     return true;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    checkValid();
+    if (!checkValid()) return;
+
+    setLoading(true);
+
+    let form = {
+      title: title,
+      ward: ward,
+      street: street,
+      description: description,
+      type: type,
+      price: price,
+      area: area,
+      direction: direction,
+      bedroom: bedroom,
+      bathroom: bathroom,
+      floor: floor,
+      videos: videos.map((video) => video.url),
+    };
+
+    let res = await axios.put("/api/user/property/" + id, form, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (res.data?.message == "Success") {
+      const propertyId = id;
+
+      let imagePromises = Promise.all(
+        images.map(async (image) => {
+          const formData = new FormData();
+          formData.append("property", propertyId);
+          formData.append("type", "image");
+          formData.append("file", image);
+
+          axios.post("/api/user/property/uploadFile", formData, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+        })
+      );
+
+      let panoPromises = Promise.all(
+        panorama.map(async (pano) => {
+          const formData = new FormData();
+          formData.append("property", propertyId);
+          formData.append("type", "pano");
+          formData.append("file", pano);
+
+          return axios.post("/api/user/property/uploadFile", formData, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+        })
+      );
+
+      Promise.all([imagePromises, panoPromises])
+        .then(() => {
+          alert("Chỉnh sửa tin thành công");
+          // window.location.href = "/bai-dang-cua-ban";
+          setLoading(false);
+        })
+        .catch((err) => {
+          console.log(err);
+          alert("Chỉnh sửa tin thất bại");
+          setLoading(false);
+        });
+    }
+  };
+
+  const handleImages = (e) => {
+    const files = e.target.files;
+    setImages([...images, ...files]);
+  };
+
+  const handlePanomaras = (e) => {
+    const files = e.target.files;
+    setPanorama([...panorama, ...files]);
   };
 
   return (
@@ -169,7 +281,7 @@ export default function PostProperty() {
                 >
                   <option value="">Chọn thành phố</option>
                   {cities.map((city) => (
-                    <option key={city.id} value={city.name}>
+                    <option key={city.id} value={city.id}>
                       {city.name}
                     </option>
                   ))}
@@ -184,7 +296,7 @@ export default function PostProperty() {
                 >
                   <option value="">Chọn quận/huyện</option>
                   {districts.map((district) => (
-                    <option key={district.id} value={district.name}>
+                    <option key={district.id} value={district.id}>
                       {district.name}
                     </option>
                   ))}
@@ -199,7 +311,7 @@ export default function PostProperty() {
                 >
                   <option value="">Chọn phường/xã</option>
                   {wards.map((ward) => (
-                    <option key={ward.id} value={ward.name}>
+                    <option key={ward.id} value={ward.id}>
                       {ward.name}
                     </option>
                   ))}
@@ -351,17 +463,17 @@ export default function PostProperty() {
                 Hình ảnh
               </label>
               <div className="grid grid-cols-4 gap-2">
-                {images.map((image) => (
-                  <div key={image.id} className="relative">
+                {images.map((image, index) => (
+                  <div key={"image" + index} className="relative">
                     <img
                       className="w-full h-40 object-cover rounded-lg"
-                      src={image.url}
-                      alt={image.name}
+                      src={URL.createObjectURL(image)}
+                      alt={"image" + index}
                     />
                     <button
                       className="absolute top-2 right-2 bg-red-600 text-white rounded-full w-6 h-6 flex justify-center items-center"
                       onClick={() =>
-                        setImages(images.filter((i) => i.id !== image.id))
+                        setImages((images) => images.filter((i) => i != image))
                       }
                       type="button"
                     >
@@ -384,18 +496,7 @@ export default function PostProperty() {
                         id="images"
                         accept="image/*"
                         multiple
-                        onChange={(e) => {
-                          const files = e.target.files;
-                          const newImages = [];
-                          for (let i = 0; i < files.length; i++) {
-                            newImages.push({
-                              id: i,
-                              name: files[i].name,
-                              url: URL.createObjectURL(files[i]),
-                            });
-                          }
-                          setImages([...images, ...newImages]);
-                        }}
+                        onChange={handleImages}
                       />
                     </div>
                   </label>
@@ -406,18 +507,20 @@ export default function PostProperty() {
                 Ảnh 360<sup>o</sup>
               </label>
               <div className="grid grid-cols-4 gap-2">
-                {panorama.map((pano) => (
-                  <div key={pano.id} className="relative">
+                {panorama.map((pano, index) => (
+                  <div key={"pano" + index} className="relative">
                     <img
                       className="w-full h-40 object-cover rounded-lg"
-                      src={pano.url}
-                      alt={pano.name}
+                      src={URL.createObjectURL(pano)}
+                      alt={"pano" + index}
                     />
                     <button
                       className="absolute top-2 right-2 bg-red-600 text-white rounded-full w-6 h-6 flex justify-center items-center"
-                      onClick={() =>
-                        setPanorama(pano.filter((i) => i.id !== pano.id))
-                      }
+                      onClick={() => {
+                        setPanorama((panorama) =>
+                          panorama.filter((i) => i != pano)
+                        );
+                      }}
                       type="button"
                     >
                       <XMarkIcon className="w-4 h-4" />
@@ -439,18 +542,7 @@ export default function PostProperty() {
                         id="panoramas"
                         accept="image/*"
                         multiple
-                        onChange={(e) => {
-                          const files = e.target.files;
-                          const newPanos = [];
-                          for (let i = 0; i < files.length; i++) {
-                            newPanos.push({
-                              id: i,
-                              name: files[i].name,
-                              url: URL.createObjectURL(files[i]),
-                            });
-                          }
-                          setPanorama([...panorama, ...newPanos]);
-                        }}
+                        onChange={handlePanomaras}
                       />
                     </div>
                   </label>
@@ -508,8 +600,9 @@ export default function PostProperty() {
               <button
                 className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-all duration-200 font-semibold"
                 type="submit"
+                disabled={loading}
               >
-                Hoàn thành
+                {loading ? "Đang tải..." : "Chỉnh sửa"}
               </button>
             </div>
           </form>

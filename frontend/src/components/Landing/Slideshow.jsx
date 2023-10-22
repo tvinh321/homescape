@@ -48,7 +48,7 @@ export default function Slideshow() {
         <div
           className="bg-transparent h-full"
           style={{
-            boxShadow: "0px 0px 200px 100px rgba(0, 0, 0, 0.3) inset",
+            boxShadow: "0px 0px 200px 100px rgba(0, 0, 0, 0.6) inset",
           }}
         >
           <div className="h-full justify-center items-center flex flex-col text-gray-100">

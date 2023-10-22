@@ -6,10 +6,14 @@ import axios, { baseURL } from "../../axiosConfig";
 export default function OutstandingProperties() {
   const [houseList, setHouseList] = React.useState([]);
   const ranOnce = React.useRef(false);
+  const token = localStorage.getItem("token");
 
   useEffect(() => {
     const fetchHouseList = async () => {
-      const res = await axios.get("/api/property/outstanding");
+      const res = await axios.get("/api/property/outstanding", {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+
       setHouseList(res.data.data);
     };
     if (!ranOnce.current) {
@@ -17,6 +21,42 @@ export default function OutstandingProperties() {
       fetchHouseList();
     }
   }, []);
+
+  const handleFavorite = async (id) => {
+    if (!token) {
+      alert("Vui lòng đăng nhập để sử dụng chức năng này");
+      return;
+    }
+
+    const favorite = houseList.find((house) => house.id === id).favorite;
+    if (favorite) {
+      await axios.delete(`/api/user/favorite/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      setHouseList((houseList) =>
+        houseList.map((house) => {
+          if (house.id === id) {
+            return { ...house, favorite: false };
+          }
+          return house;
+        })
+      );
+    } else {
+      await axios.get(`/api/user/favorite/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      setHouseList((houseList) =>
+        houseList.map((house) => {
+          if (house.id === id) {
+            return { ...house, favorite: true };
+          }
+          return house;
+        })
+      );
+    }
+  };
 
   return (
     <div className="w-full px-48 pt-10 pb-20 bg-white">
@@ -46,7 +86,7 @@ export default function OutstandingProperties() {
                         </p>
                       </div>
                       <div className="flex justify-between">
-                        <p className="text-gray-700 text-sm">
+                        <p className="text-gray-700 text-sm line-clamp-2">
                           {house.location}
                         </p>
                         <button className="text-sm">
@@ -57,6 +97,10 @@ export default function OutstandingProperties() {
                                 ? "text-red-600 fill-current"
                                 : "text-gray-400")
                             }
+                            onClick={(e) => {
+                              e.preventDefault();
+                              handleFavorite(house.id);
+                            }}
                           />
                         </button>
                       </div>

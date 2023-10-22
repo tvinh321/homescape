@@ -109,4 +109,20 @@ public class FileService {
 
         fileRepo.deleteAll(files);
     }
+
+    public void saveVideo(String video, Long id) {
+        Property property = propertyService.getProperty(id);
+
+        if (property == null) {
+            log.error("Property not found");
+            throw new IllegalArgumentException("Property not found");
+        }
+
+        File newFile = new File();
+        newFile.setProperty(property);
+        newFile.setType("video");
+        newFile.setPath(video);
+
+        fileRepo.save(newFile);
+    }
 }

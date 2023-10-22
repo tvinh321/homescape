@@ -6,6 +6,7 @@ import org.pltv.homescape.dto.ErrorResponse;
 import org.pltv.homescape.dto.SuccessReponse;
 import org.pltv.homescape.dto.property.PropertyPostReq;
 import org.pltv.homescape.dto.property.PropertyPostRes;
+import org.pltv.homescape.dto.property.PropertyQueryRes;
 import org.pltv.homescape.dto.property.PropertySearchQuery;
 import org.pltv.homescape.dto.property.PropertyFileUpload;
 import org.pltv.homescape.dto.property.PropertyInfoRes;
@@ -68,7 +69,7 @@ public class PropertyController {
             log.info("Email: " + email);
         }
 
-        List<PropertyListRes> properties = propertyService.getPropertiesQuery(query, page, email);
+        PropertyQueryRes properties = propertyService.getPropertiesQuery(query, page, email);
 
         return ResponseEntity.ok(SuccessReponse.builder().data(properties).message("Success").build());
     }

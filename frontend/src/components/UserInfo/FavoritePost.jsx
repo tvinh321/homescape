@@ -1,40 +1,11 @@
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 
 import { AuthContext } from "../../contexts/AuthContext";
 
 import ReactPaginate from "react-paginate";
 
 import { HeartIcon } from "@heroicons/react/24/outline";
-
-const mockData = [
-  {
-    id: 1,
-    title: "Bán nhà mặt tiền đường Nguyễn Văn Cừ, Quận 5",
-    price: 1000000000,
-    area: 100,
-    location: "Quận 5, TP. Hồ Chí Minh",
-    image: "https://picsum.photos/1920/1080",
-    favorite: true,
-  },
-  {
-    id: 2,
-    title: "Bán nhà mặt tiền đường Nguyễn Văn Cừ, Quận 5",
-    price: 1000000000,
-    area: 100,
-    location: "Quận 5, TP. Hồ Chí Minh",
-    image: "https://picsum.photos/1920/1080",
-    favorite: false,
-  },
-  {
-    id: 3,
-    title: "Bán nhà mặt tiền đường Nguyễn Văn Cừ, Quận 5",
-    price: 1000000000,
-    area: 100,
-    location: "Quận 5, TP. Hồ Chí Minh",
-    image: "https://picsum.photos/1920/1080",
-    favorite: true,
-  },
-];
+import axios, { baseURL } from "../../axiosConfig";
 
 export default function FavoritePost() {
   const searchParams = new URLSearchParams(window.location.search);
@@ -44,9 +15,77 @@ export default function FavoritePost() {
   const [totalPage, setTotalPage] = useState(1);
   const [loading, setLoading] = useState(false);
 
+  const [properties, setProperties] = useState([]);
+
+  useEffect(() => {
+    if (!user) {
+      window.location.href = "/dang-nhap";
+    }
+  }, [user]);
+
+  useEffect(() => {
+    setLoading(true);
+    axios
+      .get(`/api/user/myFavorites?page=${page}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      })
+      .then((res) => {
+        setTotalPage(res.data.data.totalPages);
+        setProperties(res.data.data.properties);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  }, [page]);
+
+  const handleFavorite = (e, id) => {
+    e.preventDefault();
+    const favorite = properties.find((property) => property.id === id).favorite;
+    if (favorite) {
+      axios
+        .delete(`/api/user/favorite/${id}`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        })
+        .then((res) => {
+          setProperties(
+            properties.map((property) => {
+              if (property.id === id) {
+                return { ...property, favorite: false };
+              }
+              return property;
+            })
+          );
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    } else {
+      axios
+        .get(`/api/user/favorite/${id}`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        })
+        .then((res) => {
+          setProperties(
+            properties.map((property) => {
+              if (property.id === id) {
+                return { ...property, favorite: true };
+              }
+              return property;
+            })
+          );
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    }
+  };
+
   return (
     <div className="px-48 pt-10 pb-32 bg-white">
-      <h1 className="font-bold text-3xl mt-4">Bài đăng yêu thích</h1>
+      <h1 className="font-bold text-2xl mt-4">Bài đăng yêu thích</h1>
       <div className="mx-auto mt-8">
         {loading ? (
           <div className="col-span-3 flex justify-center">
@@ -54,13 +93,13 @@ export default function FavoritePost() {
           </div>
         ) : (
           <>
-            {mockData.map((house, index) => {
+            {properties.map((house, index) => {
               return (
                 <>
                   <div className="flex border w-full hover:shadow-xl transition-all duration-200">
                     <img
                       className="object-cover h-48 w-64 cursor-pointer"
-                      src={house.image}
+                      src={baseURL + "/api/property/file/" + house.image}
                       alt="Ảnh nhà đất"
                       onClick={(e) => {
                         e.preventDefault();
@@ -69,7 +108,7 @@ export default function FavoritePost() {
                     />
                     <div className="ml-4 w-full relative">
                       <a href={`/bai-dang/${house.id}`}>
-                        <div className="font-bold leading-relaxed mt-2 truncate text-lg transition-all duration-200 hover:text-blue-700">
+                        <div className="font-bold mt-2 line-clamp-1 transition-all duration-200 hover:text-blue-700 mr-4">
                           {house.title}
                         </div>
                       </a>
@@ -83,30 +122,7 @@ export default function FavoritePost() {
                         <p className="text-gray-700 text-sm">
                           {house.location}
                         </p>
-                        <button
-                          className={"text-sm mr-3"}
-                          onClick={(e) => {
-                            e.preventDefault();
-                            if (user) {
-                              axios
-                                .post(
-                                  `/api/properties/${house.id}/save`,
-                                  {},
-                                  {
-                                    headers: {
-                                      Authorization: `Bearer ${user.token}`,
-                                    },
-                                  }
-                                )
-                                .then((response) => {
-                                  console.log(response);
-                                })
-                                .catch((error) => {
-                                  console.log(error);
-                                });
-                            }
-                          }}
-                        >
+                        <button className={"text-sm mr-3"}>
                           <HeartIcon
                             className={
                               "h-5 w-5" +
@@ -114,6 +130,9 @@ export default function FavoritePost() {
                                 ? " fill-current text-red-600"
                                 : " text-gray-400")
                             }
+                            onClick={(e) => {
+                              handleFavorite(e, house.id);
+                            }}
                           />
                         </button>
                       </div>

@@ -18,11 +18,11 @@ import EmailVerify from "./pages/EmailVerify";
 export default function PageRoute() {
   const [user, setUser] = useState(null);
   const ranOnce = useRef(false);
+  const token = localStorage.getItem("token");
 
   // Check if user is logged in using HttpOnly cookie
   useEffect(() => {
     const checkLoggedIn = async () => {
-      const token = localStorage.getItem("token");
       if (token) {
         const res = await axios.get("/api/user/info", {
           headers: { Authorization: `Bearer ${token}` },
@@ -58,8 +58,6 @@ export default function PageRoute() {
               <Route path="/chinh-sua/:id" element={<EditProperty />} />
             </>
           )}
-
-          <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
     </AuthContext.Provider>

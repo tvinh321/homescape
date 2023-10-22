@@ -6,6 +6,7 @@ import java.util.UUID;
 
 import org.pltv.homescape.dto.property.PropertyAuthorRes;
 import org.pltv.homescape.dto.property.PropertyListRes;
+import org.pltv.homescape.dto.property.PropertyQueryRes;
 import org.pltv.homescape.dto.user.RegisterReq;
 import org.pltv.homescape.dto.user.UserInfoReq;
 import org.pltv.homescape.dto.user.UserInfoRes;
@@ -193,6 +194,8 @@ public class UserService implements UserDetailsService {
         userInfo.setPhone(user.getPhone());
         userInfo.setStreet(user.getStreet());
         userInfo.setWard(user.getWard() == null ? null : user.getWard().getId());
+        userInfo.setDistrict(user.getWard() == null ? null : user.getWard().getDistrict().getId());
+        userInfo.setCity(user.getWard() == null ? null : user.getWard().getDistrict().getCity().getId());
         return userInfo;
     }
 
@@ -221,29 +224,31 @@ public class UserService implements UserDetailsService {
                 .phone(user.getPhone())
                 .street(user.getStreet())
                 .ward(user.getWard().getId())
+                .district(user.getWard().getDistrict().getId())
+                .city(user.getWard().getDistrict().getCity().getId())
                 .build();
     }
 
-    public List<PropertyListRes> getProperties(String email) {
+    public PropertyQueryRes getProperties(String email, int page) {
         User user = userRepo.findByEmail(email);
         if (user == null) {
             log.error("User not found");
             throw new UsernameNotFoundException("User not found");
         }
 
-        List<Property> properties = user.getProperties();
-        return propertyService.convertToPropertyListRes(properties, email);
+        PropertyQueryRes properties = propertyService.getPropertiesByEmail(email, page);
+        return properties;
     }
 
-    public List<PropertyListRes> getFavoritesProperties(String email) {
+    public PropertyQueryRes getFavoritesProperties(String email, int page) {
         User user = userRepo.findByEmail(email);
         if (user == null) {
             log.error("User not found");
             throw new UsernameNotFoundException("User not found");
         }
 
-        List<Property> properties = user.getFavoriteProperties();
-        return propertyService.convertToPropertyListRes(properties, email);
+        PropertyQueryRes properties = propertyService.getFavoritePropertiesByEmail(email, page);
+        return properties;
     }
 
     public void addToFavorite(String email, Long propertyId) {

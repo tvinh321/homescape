@@ -11,10 +11,12 @@ import org.pltv.homescape.dto.property.PropertySearchQuery;
 import org.pltv.homescape.dto.property.PropertyInfoRes;
 import org.pltv.homescape.dto.property.PropertyListRes;
 import org.pltv.homescape.dto.property.PropertyPostReq;
+import org.pltv.homescape.dto.property.PropertyQueryRes;
 import org.pltv.homescape.model.Property;
 import org.pltv.homescape.model.Ward;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -86,6 +88,10 @@ public class PropertyService {
                 .favorite(email != null
                         ? property.getFavoriteUsers().stream().anyMatch(u -> u.getEmail().equals(email))
                         : false)
+                .ward(property.getWard().getId())
+                .district(property.getWard().getDistrict().getId())
+                .city(property.getWard().getDistrict().getCity().getId())
+                .street(property.getStreet())
                 .build();
     }
 
@@ -101,7 +107,7 @@ public class PropertyService {
         propertyRepo.save(property);
     }
 
-    public List<PropertyListRes> getPropertiesQuery(PropertySearchQuery query, int page, String email) {
+    public PropertyQueryRes getPropertiesQuery(PropertySearchQuery query, int page, String email) {
         if (page < 1) {
             return null;
         }
@@ -114,8 +120,20 @@ public class PropertyService {
         List<Double> area = query.getArea();
 
         List<String> bedroom = query.getBedroom();
+        List<Byte> bedroomByte = new ArrayList<Byte>();
+        Boolean is5Plus = false;
 
-        return convertToPropertyListRes(propertyRepo.searchProperties(
+        if (bedroom != null) {
+            for (String b : bedroom) {
+                if (b.equals("5+")) {
+                    bedroomByte.add((byte) 5);
+                } else {
+                    bedroomByte.add(Byte.parseByte(b));
+                }
+            }
+        }
+
+        Page<Property> properties = propertyRepo.searchProperties(
                 query.getTitle(),
                 query.getType(),
                 query.getCity(),
@@ -125,11 +143,58 @@ public class PropertyService {
                 price == null ? null : price.get(1),
                 area == null ? null : area.get(0),
                 area == null ? null : area.get(1),
-                bedroom == null ? null : bedroom.stream().filter(b -> !b.equals("5+")).toList(),
-                bedroom == null ? null : bedroom.contains("5+"),
+                bedroom == null ? null : bedroomByte,
+                bedroom == null ? null : is5Plus,
                 query.getDirection(),
                 query.getSort(),
-                PageRequest.of(page - 1, 10)), email);
+                PageRequest.of(page - 1, 10));
+
+        List<PropertyListRes> propertyList = convertToPropertyListRes(properties.getContent(), email);
+
+        PropertyQueryRes propertyQuery = PropertyQueryRes.builder()
+                .properties(propertyList)
+                .totalPages(properties.getTotalPages())
+                .build();
+
+        return propertyQuery;
+    }
+
+    public PropertyQueryRes getPropertiesByEmail(String email, int page) {
+        if (page < 1) {
+            return null;
+        }
+
+        UUID userId = userService.getUserByEmail(email).getId();
+
+        Page<Property> properties = propertyRepo.findByUserId(userId, PageRequest.of(page - 1, 10));
+
+        List<PropertyListRes> propertyList = convertToPropertyListRes(properties.getContent(), email);
+
+        PropertyQueryRes propertyQuery = PropertyQueryRes.builder()
+                .properties(propertyList)
+                .totalPages(properties.getTotalPages())
+                .build();
+
+        return propertyQuery;
+    }
+
+    public PropertyQueryRes getFavoritePropertiesByEmail(String email, int page) {
+        if (page < 1) {
+            return null;
+        }
+
+        UUID userId = userService.getUserByEmail(email).getId();
+
+        Page<Property> properties = propertyRepo.findByFavoriteUsersId(userId, PageRequest.of(page - 1, 10));
+
+        List<PropertyListRes> propertyList = convertToPropertyListRes(properties.getContent(), email);
+
+        PropertyQueryRes propertyQuery = PropertyQueryRes.builder()
+                .properties(propertyList)
+                .totalPages(properties.getTotalPages())
+                .build();
+
+        return propertyQuery;
     }
 
     public PropertyInfoRes getPropertyInfo(Long propertyId) {
@@ -173,6 +238,10 @@ public class PropertyService {
 
         propertyRepo.save(newProperty);
 
+        for (String video : property.getVideos()) {
+            fileService.saveVideo(video, newProperty.getId());
+        }
+
         return newProperty.getId();
     }
 
@@ -211,6 +280,10 @@ public class PropertyService {
         propertyRepo.save(oldProperty);
 
         fileService.deleteAllFiles(propertyId);
+
+        for (String video : property.getVideos()) {
+            fileService.saveVideo(video, propertyId);
+        }
     }
 
     public void deleteProperty(Long propertyId) {

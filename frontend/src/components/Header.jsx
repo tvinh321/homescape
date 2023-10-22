@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import { useState, useContext } from "react";
 import HomeScapeColor from "./../assets/homescape-color.svg";
 import { UserIcon } from "@heroicons/react/24/solid";
 import { AuthContext } from "../contexts/AuthContext";
@@ -54,7 +54,7 @@ export default function Header() {
                 {user ? (
                   <div className="relative">
                     <img
-                      src={baseURL + "/api/avatar/" + user?.id}
+                      src={baseURL + "/api/avatar/" + user.id}
                       alt="avatar"
                       className="h-14 w-14 rounded-full cursor-pointer object-cover"
                       onClick={() => {

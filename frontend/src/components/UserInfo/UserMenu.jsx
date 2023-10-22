@@ -1,25 +1,78 @@
-import React, { useContext, useState } from "react";
+import { useContext, useState, useRef } from "react";
 
 import {
   IdentificationIcon,
   BuildingOffice2Icon,
   HeartIcon,
   KeyIcon,
+  CameraIcon,
 } from "@heroicons/react/24/outline";
 
 import { AuthContext } from "../../contexts/AuthContext";
-import { baseURL } from "../../axiosConfig";
+import axios, { baseURL } from "../../axiosConfig";
 
 export default function UserMenu({ selected, setSelected }) {
-  const { user, setUser } = useContext(AuthContext);
+  const { user } = useContext(AuthContext);
+  const token = localStorage.getItem("token");
+  const inputFile = useRef(null);
+  const [file, setFile] = useState(null);
+
+  const handleAvatarChange = (e) => {
+    const formData = new FormData();
+    formData.append("file", e.target.files[0]);
+
+    axios
+      .post("/api/user/avatar", formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      })
+      .then((res) => {
+        window.location.reload();
+      })
+      .catch((err) => console.log(err));
+  };
 
   return (
     <div className="w-1/5 h-full">
-      <img
-        src={baseURL + "/api/avatar/" + user?.id}
-        alt="avatar"
-        className="rounded-full w-32 h-32 mx-auto my-10 object-cover"
-      />
+      <div className="flex items-center justify-center mb-4">
+        <div
+          className="relative"
+          onClick={() => {
+            inputFile.current.click();
+          }}
+        >
+          <img
+            className="w-36 h-36 object-cover rounded-full hover:opacity-75 transition-all duration-200"
+            alt="User avatar"
+            src={
+              file
+                ? URL.createObjectURL(file)
+                : baseURL + `/api/avatar/${user.id}`
+            }
+          />
+          <span className="absolute right-0 bottom-1">
+            <CameraIcon className="w-6 h-6 mr-2" />
+            <input
+              type="file"
+              accept="image/*"
+              id="file"
+              ref={inputFile}
+              style={{
+                display: "none",
+              }}
+              onChange={() => {
+                handleAvatarChange({
+                  target: {
+                    files: [inputFile.current.files[0]],
+                  },
+                });
+              }}
+            />
+          </span>
+        </div>
+      </div>
       <div className="text-center">
         <h1 className="text-2xl font-bold">{user?.name}</h1>
       </div>

@@ -1,5 +1,7 @@
 package org.pltv.homescape.dto.property;
 
+import java.util.List;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -21,4 +23,5 @@ public class PropertyPostReq {
     private Byte bedroom;
     private Byte bathroom;
     private Byte floor;
+    private List<String> videos;
 }

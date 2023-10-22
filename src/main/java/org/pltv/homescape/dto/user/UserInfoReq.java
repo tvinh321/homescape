@@ -19,4 +19,6 @@ public class UserInfoReq {
     private String phone;
     private String street;
     private Long ward;
+    private Long district;
+    private Long city;
 }

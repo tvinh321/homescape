@@ -34,6 +34,8 @@ export default function PostProperty() {
   const [districts, setDistricts] = useState([]);
   const [wards, setWards] = useState([]);
 
+  const [loading, setLoading] = useState(false);
+
   const ranOnce = useRef(false);
 
   useEffect(() => {
@@ -152,6 +154,8 @@ export default function PostProperty() {
     e.preventDefault();
     checkValid();
 
+    setLoading(true);
+
     let form = {
       title: title,
       ward: ward,
@@ -164,7 +168,7 @@ export default function PostProperty() {
       bedroom: bedroom,
       bathroom: bathroom,
       floor: floor,
-      videos: videos,
+      videos: videos.map((video) => video.url),
     };
 
     let res = await axios.post("/api/user/property", form, {
@@ -176,45 +180,58 @@ export default function PostProperty() {
     if (res.data?.message == "Property created") {
       const propertyId = res.data?.id;
 
-      images.forEach((image) => {
-        const formData = new FormData();
-        formData.append("property", propertyId);
-        formData.append("type", "image");
-        formData.append("file", image);
+      let imagePromises = Promise.all(
+        images.map(async (image) => {
+          const formData = new FormData();
+          formData.append("property", propertyId);
+          formData.append("type", "image");
+          formData.append("file", image);
 
-        axios.post("/api/user/property/uploadFile", formData, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          axios.post("/api/user/property/uploadFile", formData, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+        })
+      );
+
+      let panoPromises = Promise.all(
+        panorama.map(async (pano) => {
+          const formData = new FormData();
+          formData.append("property", propertyId);
+          formData.append("type", "pano");
+          formData.append("file", pano);
+
+          return axios.post("/api/user/property/uploadFile", formData, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+        })
+      );
+
+      Promise.all([imagePromises, panoPromises])
+        .then(() => {
+          alert("Đăng tin thành công");
+          // window.location.href = "/bai-dang-cua-ban";
+          setLoading(false);
+        })
+        .catch((err) => {
+          console.log(err);
+          alert("Đăng tin thất bại");
+          setLoading(false);
         });
-      });
-
-      panorama.forEach((pano) => {
-        const formData = new FormData();
-        formData.append("property", propertyId);
-        formData.append("file", pano);
-        formData.append("type", "panorama");
-
-        axios.post("/api/user/property/uploadFile", formData, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-      });
-
-      videos.forEach((video) => {
-        const formData = new FormData();
-        formData.append("property", propertyId);
-        formData.append("url", video.url);
-        formData.append("type", "video");
-
-        axios.post("/api/user/property/uploadFile", formData, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-      });
     }
+  };
+
+  const handleImages = (e) => {
+    const files = e.target.files;
+    setImages([...images, ...files]);
+  };
+
+  const handlePanomaras = (e) => {
+    const files = e.target.files;
+    setPanorama([...panorama, ...files]);
   };
 
   return (
@@ -433,17 +450,17 @@ export default function PostProperty() {
                 Hình ảnh
               </label>
               <div className="grid grid-cols-4 gap-2">
-                {images.map((image) => (
-                  <div key={image.id} className="relative">
+                {images.map((image, index) => (
+                  <div key={"image" + index} className="relative">
                     <img
                       className="w-full h-40 object-cover rounded-lg"
-                      src={image.url}
-                      alt={image.name}
+                      src={URL.createObjectURL(image)}
+                      alt={"image" + index}
                     />
                     <button
                       className="absolute top-2 right-2 bg-red-600 text-white rounded-full w-6 h-6 flex justify-center items-center"
                       onClick={() =>
-                        setImages(images.filter((i) => i.id !== image.id))
+                        setImages((images) => images.filter((i) => i != image))
                       }
                       type="button"
                     >
@@ -466,18 +483,7 @@ export default function PostProperty() {
                         id="images"
                         accept="image/*"
                         multiple
-                        onChange={(e) => {
-                          const files = e.target.files;
-                          const newImages = [];
-                          for (let i = 0; i < files.length; i++) {
-                            newImages.push({
-                              id: i,
-                              name: files[i].name,
-                              url: URL.createObjectURL(files[i]),
-                            });
-                          }
-                          setImages([...images, ...newImages]);
-                        }}
+                        onChange={handleImages}
                       />
                     </div>
                   </label>
@@ -488,18 +494,20 @@ export default function PostProperty() {
                 Ảnh 360<sup>o</sup>
               </label>
               <div className="grid grid-cols-4 gap-2">
-                {panorama.map((pano) => (
-                  <div key={pano.id} className="relative">
+                {panorama.map((pano, index) => (
+                  <div key={"pano" + index} className="relative">
                     <img
                       className="w-full h-40 object-cover rounded-lg"
-                      src={pano.url}
-                      alt={pano.name}
+                      src={URL.createObjectURL(pano)}
+                      alt={"pano" + index}
                     />
                     <button
                       className="absolute top-2 right-2 bg-red-600 text-white rounded-full w-6 h-6 flex justify-center items-center"
-                      onClick={() =>
-                        setPanorama(pano.filter((i) => i.id !== pano.id))
-                      }
+                      onClick={() => {
+                        setPanorama((panorama) =>
+                          panorama.filter((i) => i != pano)
+                        );
+                      }}
                       type="button"
                     >
                       <XMarkIcon className="w-4 h-4" />
@@ -521,18 +529,7 @@ export default function PostProperty() {
                         id="panoramas"
                         accept="image/*"
                         multiple
-                        onChange={(e) => {
-                          const files = e.target.files;
-                          const newPanos = [];
-                          for (let i = 0; i < files.length; i++) {
-                            newPanos.push({
-                              id: i,
-                              name: files[i].name,
-                              url: URL.createObjectURL(files[i]),
-                            });
-                          }
-                          setPanorama([...panorama, ...newPanos]);
-                        }}
+                        onChange={handlePanomaras}
                       />
                     </div>
                   </label>
@@ -590,8 +587,9 @@ export default function PostProperty() {
               <button
                 className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-all duration-200 font-semibold"
                 type="submit"
+                disabled={loading}
               >
-                Đăng tin
+                {loading ? "Đang đăng tin..." : "Đăng tin"}
               </button>
             </div>
           </form>

@@ -1,17 +1,18 @@
-import { useState, useEffect, useContext, useRef } from "react";
-import { AuthContext } from "../contexts/AuthContext";
+import { useState, useEffect, useRef } from "react";
 import { useParams } from "react-router-dom";
 import axios, { baseURL } from "../axiosConfig";
 
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 
-import "react-responsive-carousel/lib/styles/carousel.min.css"; // requires a loader
+import "react-responsive-carousel/lib/styles/carousel.min.css";
+import "../components/Carousel.css";
+
 import { Carousel } from "react-responsive-carousel";
 import ReactPannellum from "react-pannellum";
 import Youtube from "react-youtube";
 
-import { typesList } from "../constants/properties";
+import { typesList, directionsList } from "../constants/properties";
 
 import {
   PhoneIcon,
@@ -30,7 +31,7 @@ const videoCode = (url) => {
 };
 
 export default function ViewProperty() {
-  const { user, setUser } = useContext(AuthContext);
+  const token = localStorage.getItem("token");
   const { id } = useParams();
   const [showPhone, setShowPhone] = useState(false);
   const [showEmail, setShowEmail] = useState(false);
@@ -46,7 +47,9 @@ export default function ViewProperty() {
 
   useEffect(() => {
     const getProperty = async () => {
-      const res = await axios.get("/api/property/" + id);
+      const res = await axios.get("/api/property/" + id, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
 
       let property = res.data?.data;
 
@@ -64,6 +67,23 @@ export default function ViewProperty() {
       getProperty();
     }
   }, []);
+
+  const handleFavorite = async (id) => {
+    const favorite = property?.favorite;
+    if (favorite) {
+      await axios.delete(`/api/user/favorite/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      setProperty((property) => ({ ...property, favorite: false }));
+    } else {
+      await axios.get(`/api/user/favorite/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      setProperty((property) => ({ ...property, favorite: true }));
+    }
+  };
 
   return (
     <>
@@ -132,6 +152,7 @@ export default function ViewProperty() {
                   </div>
                 ))}
             </Carousel>
+
             <div className="mt-8">
               <div className="flex justify-between">
                 <h1 className="font-semibold text-3xl mb-1">
@@ -145,6 +166,10 @@ export default function ViewProperty() {
                         ? " fill-current text-red-600"
                         : " text-gray-400")
                     }
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleFavorite(property?.id);
+                    }}
                   />
                 </button>
               </div>
@@ -165,26 +190,40 @@ export default function ViewProperty() {
                   <span className="font-semibold">Loại:</span>{" "}
                   {typesList.find((item) => item.value == property?.type)?.name}
                 </p>
-                <p>
-                  <span className="font-semibold">Hướng:</span>{" "}
-                  {property?.direction}
-                </p>
-                <p>
-                  <span className="font-semibold">Phòng ngủ:</span>{" "}
-                  {property?.bedroom}
-                </p>
-                <p>
-                  <span className="font-semibold">Phòng tắm:</span>{" "}
-                  {property?.bathroom}
-                </p>
-                <p>
-                  <span className="font-semibold">Số tầng:</span>{" "}
-                  {property?.floor}
-                </p>
-                <p>
-                  <span className="font-semibold">Số phòng:</span>{" "}
-                  {property?.room}
-                </p>
+                {property?.direction && (
+                  <p>
+                    <span className="font-semibold">Hướng:</span>{" "}
+                    {
+                      directionsList.find(
+                        (item) => item.value == property?.direction
+                      )?.name
+                    }
+                  </p>
+                )}
+                {property?.bedroom && (
+                  <p>
+                    <span className="font-semibold">Phòng ngủ:</span>{" "}
+                    {property?.bedroom}
+                  </p>
+                )}
+                {property?.bathroom && (
+                  <p>
+                    <span className="font-semibold">Phòng tắm:</span>{" "}
+                    {property?.bathroom}
+                  </p>
+                )}
+                {property?.floor && (
+                  <p>
+                    <span className="font-semibold">Số tầng:</span>{" "}
+                    {property?.floor}
+                  </p>
+                )}
+                {property?.room && (
+                  <p>
+                    <span className="font-semibold">Số phòng:</span>{" "}
+                    {property?.room}
+                  </p>
+                )}
               </div>
             </div>
             <div className="w-full h-px bg-gray-300 my-10"></div>
