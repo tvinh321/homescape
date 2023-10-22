@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 import Header from "../components/Header";
 import Footer from "../components/Footer";
@@ -7,6 +7,8 @@ import { typesList, directionsList } from "../constants/properties";
 
 import { PlusIcon, XMarkIcon } from "@heroicons/react/24/solid";
 import { PlusCircleIcon } from "@heroicons/react/24/outline";
+
+import axios from "../axiosConfig";
 
 export default function PostProperty() {
   const [title, setTitle] = useState("");
@@ -31,40 +33,27 @@ export default function PostProperty() {
   const [districts, setDistricts] = useState([]);
   const [wards, setWards] = useState([]);
 
+  const ranOnce = useRef(false);
+
   useEffect(() => {
-    // axios.get("/api/location/cities").then((res) => {
-    //   setCities(res.data.cities);
-    // });
-    setCities([
-      {
-        id: 1,
-        name: "Hồ Chí Minh",
-      },
-    ]);
+    if (!ranOnce.current) {
+      ranOnce.current = true;
+      axios.get("/api/location/cities").then((res) => {
+        setCities(res.data.cities);
+      });
+    }
   }, []);
 
   useEffect(() => {
-    // axios.get(`/api/location/districts/${city}`).then((res) => {
-    //   setDistricts(res.data.districts);
-    // });
-    setDistricts([
-      {
-        id: 1,
-        name: "Quận 1",
-      },
-    ]);
+    axios.get(`/api/location/districts/${city}`).then((res) => {
+      setDistricts(res.data.districts);
+    });
   }, [city]);
 
   useEffect(() => {
-    // axios.get(`/api/location/wards/${district}`).then((res) => {
-    //   setWards(res.data.wards);
-    // });
-    setWards([
-      {
-        id: 1,
-        name: "Phường 1",
-      },
-    ]);
+    axios.get(`/api/location/wards/${district}`).then((res) => {
+      setWards(res.data.wards);
+    });
   }, [district]);
 
   useEffect(() => {

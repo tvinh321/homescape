@@ -6,6 +6,7 @@ import java.util.UUID;
 import org.pltv.homescape.dto.ErrorResponse;
 import org.pltv.homescape.dto.SuccessReponse;
 import org.pltv.homescape.dto.user.ChangePasswordReq;
+import org.pltv.homescape.dto.user.CheckTokenReq;
 import org.pltv.homescape.dto.user.ForgetPasswordReq;
 import org.pltv.homescape.dto.user.LoginReq;
 import org.pltv.homescape.dto.user.LoginRes;
@@ -15,6 +16,7 @@ import org.pltv.homescape.dto.user.RegisterRes;
 import org.pltv.homescape.dto.user.ResetPasswordReq;
 import org.pltv.homescape.dto.user.UserInfoReq;
 import org.pltv.homescape.model.User;
+import org.pltv.homescape.service.EmailService;
 import org.pltv.homescape.service.JwtService;
 import org.pltv.homescape.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,6 +51,9 @@ public class UserController {
 
     @Autowired
     private JwtService jwtService;
+
+    @Autowired
+    private EmailService emailService;
 
     @PostMapping("/api/login")
     public ResponseEntity<Object> login(@RequestBody LoginReq loginPost) {
@@ -88,7 +93,7 @@ public class UserController {
     }
 
     @PostMapping("/api/register")
-    public ResponseEntity<Object> register(@RequestBody RegisterReq registerPost) {
+    public ResponseEntity<Object> register(@RequestBody RegisterReq registerPost) throws Exception {
         if (registerPost.getEmail() == null || registerPost.getPassword() == null
                 || registerPost.getConfirmPassword() == null) {
             return ResponseEntity.badRequest()
@@ -105,6 +110,27 @@ public class UserController {
 
     }
 
+    @PostMapping("/api/checkToken")
+    public ResponseEntity<Object> checkToken(@RequestBody CheckTokenReq token) throws Exception {
+        if (token == null) {
+            return ResponseEntity.badRequest()
+                    .body(ErrorResponse.builder().code("400").error("Bad Request").message("Missing field").build());
+        }
+
+        try {
+            Boolean verify = emailService.verifyEmailToken(token.getToken(), true);
+            if (verify == false) {
+                return ResponseEntity.badRequest().body(ErrorResponse.builder().code("400").error("Bad Request")
+                        .message("Invalid token").build());
+            }
+
+            return ResponseEntity.ok().body(SuccessReponse.builder().message("Valid token").build());
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(ErrorResponse.builder().code("400").error("Bad Request")
+                    .message("Invalid token").build());
+        }
+    }
+
     @GetMapping("/api/verify/{token}")
     public ResponseEntity<Object> verify(@PathVariable("token") String token) throws Exception {
         userService.verifyEmail(token);
@@ -118,8 +144,10 @@ public class UserController {
                     .body(ErrorResponse.builder().code("400").error("Bad Request").message("Missing field").build());
         }
 
+        userService.forgotPassword(forgetPasswordReq.getEmail());
+
         return ResponseEntity.ok().body(SuccessReponse.builder().message("Email sent")
-                .data(userService.forgotPassword(forgetPasswordReq.getEmail())).build());
+                .build());
     }
 
     @PostMapping("/api/resetPassword")
@@ -135,8 +163,7 @@ public class UserController {
         }
 
         userService.resetPassword(resetPasswordPost.getToken(), resetPasswordPost.getNewPassword());
-        return ResponseEntity.ok().body(SuccessReponse.builder().message("Password reset successful").build());
-
+        return ResponseEntity.ok().body(SuccessReponse.builder().message("Password reset successfully").build());
     }
 
     @PostMapping("/api/user/changePassword")

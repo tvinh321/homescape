@@ -34,15 +34,20 @@ export default function Search() {
   const [showDirection, setShowDirection] = useState(false);
   const [showRooms, setShowRooms] = useState(false);
 
+  const ranOnce = React.useRef(false);
+
   useEffect(() => {
-    axios
-      .get("/api/location/cities")
-      .then((res) => {
-        setCitiesList(res.data);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
+    if (!ranOnce.current) {
+      ranOnce.current = true;
+      axios
+        .get("/api/location/cities")
+        .then((res) => {
+          setCitiesList(res.data);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    }
   }, []);
 
   useEffect(() => {

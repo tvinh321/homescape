@@ -36,13 +36,14 @@ public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
-    @Column(nullable = false, columnDefinition = "VARCHAR(64) DEFAULT 'default.png'")
+    @Column(nullable = false, columnDefinition = "VARCHAR(64) DEFAULT 'default.webp'")
     @Builder.Default
-    private String avatar = "default.png";
+    private String avatar = "default.webp";
     @Pattern(regexp = "^[\\p{L} ]+$", message = "Name is not valid")
     @Column(length = 32)
     private String name;
     @Email(message = "Email is not valid")
+    @Column(unique = true, nullable = false)
     private String email;
     @Column(length = 60, nullable = false)
     private String password;

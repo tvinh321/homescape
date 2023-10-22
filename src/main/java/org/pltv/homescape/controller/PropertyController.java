@@ -4,7 +4,8 @@ import java.util.List;
 
 import org.pltv.homescape.dto.ErrorResponse;
 import org.pltv.homescape.dto.SuccessReponse;
-import org.pltv.homescape.dto.property.PropertyPost;
+import org.pltv.homescape.dto.property.PropertyPostReq;
+import org.pltv.homescape.dto.property.PropertyPostRes;
 import org.pltv.homescape.dto.property.PropertySearchQuery;
 import org.pltv.homescape.dto.property.PropertyFileUpload;
 import org.pltv.homescape.dto.property.PropertyInfoRes;
@@ -84,7 +85,7 @@ public class PropertyController {
     }
 
     @PostMapping("/api/user/property")
-    public ResponseEntity<Object> postMethodName(@RequestBody PropertyPost property) {
+    public ResponseEntity<Object> postMethodName(@RequestBody PropertyPostReq property) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
         if (auth == null) {
@@ -94,13 +95,13 @@ public class PropertyController {
 
         String email = (String) auth.getPrincipal();
 
-        propertyService.saveProperty(property, email);
+        Long id = propertyService.saveProperty(property, email);
 
-        return ResponseEntity.ok(SuccessReponse.builder().message("Success").build());
+        return ResponseEntity.ok(PropertyPostRes.builder().message("Property created").id(id).build());
     }
 
     @PutMapping("/api/user/property/{id}")
-    public ResponseEntity<Object> updateProperty(@PathVariable("id") Long id, @RequestBody PropertyPost property) {
+    public ResponseEntity<Object> updateProperty(@PathVariable("id") Long id, @RequestBody PropertyPostReq property) {
         String authorEmail = propertyService.getAuthorEmail(id);
         if (authorEmail == null) {
             return ResponseEntity.notFound().build();

@@ -1,10 +1,36 @@
 import React, { useState } from "react";
 
-export default function Login({ screen, setScreen }) {
+import axios from "../../axiosConfig";
+
+export default function ForgotPassword({ screen, setScreen }) {
   const [email, setEmail] = useState("");
 
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const handleForgotPassword = async (e) => {
+    e.preventDefault();
+
+    setError("");
+
+    if (!email) {
+      setError("Vui lòng nhập email");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const res = await axios.post("/api/forgotPassword", { email: email });
+      if (res.data?.message == "Email sent") {
+        setLoading(false);
+        setScreen("login");
+      }
+    } catch (err) {
+      setLoading(false);
+      setError("Đã có lỗi xảy ra");
+    }
+  };
 
   return (
     <div className="flex flex-col justify-center items-center">
@@ -14,7 +40,10 @@ export default function Login({ screen, setScreen }) {
           {error}
         </div>
       )}
-      <form className="flex flex-col justify-center items-center w-full">
+      <form
+        className="flex flex-col justify-center items-center w-full"
+        onSubmit={handleForgotPassword}
+      >
         <input
           type="email"
           placeholder="Email"

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import "./index.css";
 import { AuthContext } from "./contexts/AuthContext";
@@ -11,10 +11,13 @@ import Search from "./pages/Search";
 import PostProperty from "./pages/PostProperty";
 import ViewProperty from "./pages/ViewProperty";
 import EditProperty from "./pages/EditProperty";
+import ResetPassword from "./pages/ResetPassword";
 import axios from "./axiosConfig";
+import EmailVerify from "./pages/EmailVerify";
 
 export default function PageRoute() {
   const [user, setUser] = useState(null);
+  const ranOnce = useRef(false);
 
   // Check if user is logged in using HttpOnly cookie
   useEffect(() => {
@@ -28,7 +31,11 @@ export default function PageRoute() {
         setUser(res.data?.data);
       }
     };
-    checkLoggedIn();
+
+    if (!ranOnce.current) {
+      ranOnce.current = true;
+      checkLoggedIn();
+    }
   }, []);
 
   return (
@@ -39,6 +46,8 @@ export default function PageRoute() {
           <Route path="/dang-nhap" element={<Authenticate />} />
           <Route path="/tim-kiem" element={<Search />} />
           <Route path="/bai-dang/:id" element={<ViewProperty />} />
+          <Route path="/dat-mat-khau/:token" element={<ResetPassword />} />
+          <Route path="/xac-thuc/:token" element={<EmailVerify />} />
           {user && (
             <>
               <Route path="/nguoi-dung" element={<UserInfo />} />

@@ -1,13 +1,15 @@
 package org.pltv.homescape.dto.property;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class PropertyPost {
+@Builder
+public class PropertyPostReq {
     private String title;
     private String street;
     private Long ward;

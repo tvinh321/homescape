@@ -5,13 +5,17 @@ import axios, { baseURL } from "../../axiosConfig";
 
 export default function OutstandingProperties() {
   const [houseList, setHouseList] = React.useState([]);
+  const ranOnce = React.useRef(false);
 
   useEffect(() => {
     const fetchHouseList = async () => {
       const res = await axios.get("/api/property/outstanding");
       setHouseList(res.data.data);
     };
-    fetchHouseList();
+    if (!ranOnce.current) {
+      ranOnce.current = true;
+      fetchHouseList();
+    }
   }, []);
 
   return (

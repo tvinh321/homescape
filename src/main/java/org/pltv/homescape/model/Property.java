@@ -76,10 +76,12 @@ public class Property {
 
     @PositiveOrZero
     @Column(nullable = false, columnDefinition = "INT DEFAULT 0")
-    private Integer viewCount;
+    @Builder.Default
+    private Integer viewCount = 0;
 
     @Column(nullable = false, columnDefinition = "DATETIME DEFAULT CURRENT_TIMESTAMP()")
-    private LocalDateTime createdAt;
+    @Builder.Default
+    private LocalDateTime createdAt = LocalDateTime.now();
 
     @ManyToOne(optional = false)
     @NotNull

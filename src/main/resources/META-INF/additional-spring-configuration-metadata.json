@@ -1,14 +1,32 @@
-{
-    "properties": [
-        {
-            "name": "jwt.expiration",
-            "type": "java.lang.Integer",
-            "description": "Expiration time in seconds for JWT tokens"
-        },
-        {
-            "name": "jwt.secret",
-            "type": "java.lang.String",
-            "description": "Secret used to sign JWT tokens"
-        }
-    ]
-}
+{"properties": [
+  {
+    "name": "jwt.expiration",
+    "type": "java.lang.Integer",
+    "description": "Expiration time in seconds for JWT tokens"
+  },
+  {
+    "name": "jwt.secret",
+    "type": "java.lang.String",
+    "description": "Secret used to sign JWT tokens"
+  },
+  {
+    "name": "sendgrid.api-key",
+    "type": "java.lang.String",
+    "description": "Sendgrid API key"
+  },
+  {
+    "name": "sendgrid.reset-email-template",
+    "type": "java.lang.String",
+    "description": "Template ID for the reset password email"
+  },
+  {
+    "name": "sendgrid.verify-email-template",
+    "type": "java.lang.String",
+    "description": "Template ID for the verify email"
+  },
+  {
+    "name": "sendgrid.from-email",
+    "type": "java.lang.String",
+    "description": "Email address to send emails from"
+  }
+]}

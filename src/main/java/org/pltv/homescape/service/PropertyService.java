@@ -10,7 +10,7 @@ import org.pltv.homescape.repository.PropertyRepository;
 import org.pltv.homescape.dto.property.PropertySearchQuery;
 import org.pltv.homescape.dto.property.PropertyInfoRes;
 import org.pltv.homescape.dto.property.PropertyListRes;
-import org.pltv.homescape.dto.property.PropertyPost;
+import org.pltv.homescape.dto.property.PropertyPostReq;
 import org.pltv.homescape.model.Property;
 import org.pltv.homescape.model.Ward;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -153,7 +153,7 @@ public class PropertyService {
         return convertToPropertyInfoRes(property, email);
     }
 
-    public void saveProperty(PropertyPost property, String email) {
+    public Long saveProperty(PropertyPostReq property, String email) {
         Ward ward = locationService.getWardFromId(property.getWard());
 
         Property newProperty = Property.builder()
@@ -172,6 +172,8 @@ public class PropertyService {
                 .build();
 
         propertyRepo.save(newProperty);
+
+        return newProperty.getId();
     }
 
     public String getAuthorEmail(Long propertyId) {
@@ -184,7 +186,7 @@ public class PropertyService {
         return property.getUser().getEmail();
     }
 
-    public void updateProperty(PropertyPost property, Long propertyId) {
+    public void updateProperty(PropertyPostReq property, Long propertyId) {
         Property oldProperty = propertyRepo.findById(propertyId).orElse(null);
 
         if (oldProperty == null) {

@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext, useRef } from "react";
 import { AuthContext } from "../contexts/AuthContext";
 import { useParams } from "react-router-dom";
 import axios, { baseURL } from "../axiosConfig";
@@ -42,9 +42,7 @@ export default function ViewProperty() {
   const [panning, setPanning] = useState(false);
   const [panningPosition, setPanningPosition] = useState({ x: 0, y: 0 });
 
-  const preventScroll = (e) => {
-    e.preventDefault();
-  };
+  const ranOnce = useRef(false);
 
   useEffect(() => {
     const getProperty = async () => {
@@ -61,7 +59,10 @@ export default function ViewProperty() {
 
       setProperty(property);
     };
-    getProperty();
+    if (!ranOnce.current) {
+      ranOnce.current = true;
+      getProperty();
+    }
   }, []);
 
   return (

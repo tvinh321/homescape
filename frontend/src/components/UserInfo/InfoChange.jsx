@@ -1,8 +1,8 @@
-import { useState, useContext, useEffect } from "react";
+import { useState, useContext, useEffect, useRef } from "react";
 
 import { AuthContext } from "../../contexts/AuthContext";
 
-import axios from "axios";
+import axios from "../../axiosConfig";
 
 export default function InfoChange() {
   const { user } = useContext(AuthContext);
@@ -29,55 +29,42 @@ export default function InfoChange() {
   const [districts, setDistricts] = useState([]);
   const [wards, setWards] = useState([]);
 
-  // useEffect(() => {
-  //   if (!user) {
-  //     window.location.href = "/dang-nhap";
-  //   }
-
-  //   axios
-  //     .get(`/api/userinfo`)
-  //     .then((res) => {
-  //       console.log(res.data);
-  //     })
-  //     .catch((err) => {
-  //       console.log(err);
-  //     });
-  // }, [user]);
+  const ranOnce = useRef(false);
 
   useEffect(() => {
-    // axios.get("/api/location/cities").then((res) => {
-    //   setCities(res.data.cities);
-    // });
-    setCities([
-      {
-        id: 1,
-        name: "Hồ Chí Minh",
-      },
-    ]);
+    if (!user) {
+      window.location.href = "/dang-nhap";
+    }
+
+    axios
+      .get(`/api/user/info`)
+      .then((res) => {
+        console.log(res.data);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  }, [user]);
+
+  useEffect(() => {
+    if (!ranOnce.current) {
+      ranOnce.current = true;
+      axios.get("/api/location/cities").then((res) => {
+        setCities(res.data.cities);
+      });
+    }
   }, []);
 
   useEffect(() => {
-    // axios.get(`/api/location/districts/${city}`).then((res) => {
-    //   setDistricts(res.data.districts);
-    // });
-    setDistricts([
-      {
-        id: 1,
-        name: "Quận 1",
-      },
-    ]);
+    axios.get(`/api/location/districts/${city}`).then((res) => {
+      setDistricts(res.data.districts);
+    });
   }, [city]);
 
   useEffect(() => {
-    // axios.get(`/api/location/wards/${district}`).then((res) => {
-    //   setWards(res.data.wards);
-    // });
-    setWards([
-      {
-        id: 1,
-        name: "Phường 1",
-      },
-    ]);
+    axios.get(`/api/location/wards/${district}`).then((res) => {
+      setWards(res.data.wards);
+    });
   }, [district]);
 
   useEffect(() => {

@@ -50,29 +50,34 @@ export default function Search() {
   const [showDirection, setShowDirection] = useState(false);
   const [showRooms, setShowRooms] = useState(false);
 
+  const ranOnce = React.useRef(false);
+
   useEffect(() => {
-    const price = searchParams.get("price");
-    if (price) {
-      const priceArr = price.split("-");
-      setMinPrice(priceArr[0]);
-      setMaxPrice(priceArr[1]);
-    }
+    if (!ranOnce.current) {
+      ranOnce.current = true;
+      const price = searchParams.get("price");
+      if (price) {
+        const priceArr = price.split("-");
+        setMinPrice(priceArr[0]);
+        setMaxPrice(priceArr[1]);
+      }
 
-    const area = searchParams.get("area");
-    if (area) {
-      const areaArr = area.split("-");
-      setMinArea(areaArr[0]);
-      setMaxArea(areaArr[1]);
-    }
+      const area = searchParams.get("area");
+      if (area) {
+        const areaArr = area.split("-");
+        setMinArea(areaArr[0]);
+        setMaxArea(areaArr[1]);
+      }
 
-    axios
-      .get("/api/location/cities")
-      .then((res) => {
-        setCitiesList(res.data);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
+      axios
+        .get("/api/location/cities")
+        .then((res) => {
+          setCitiesList(res.data);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    }
   }, []);
 
   useEffect(() => {

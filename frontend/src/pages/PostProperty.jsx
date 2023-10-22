@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 import Header from "../components/Header";
 import Footer from "../components/Footer";
@@ -8,7 +8,10 @@ import { typesList, directionsList } from "../constants/properties";
 import { PlusIcon, XMarkIcon } from "@heroicons/react/24/solid";
 import { PlusCircleIcon } from "@heroicons/react/24/outline";
 
+import axios from "../axiosConfig";
+
 export default function PostProperty() {
+  const token = localStorage.getItem("token");
   const [title, setTitle] = useState("");
   const [address, setAddress] = useState("");
   const [street, setStreet] = useState("");
@@ -31,40 +34,44 @@ export default function PostProperty() {
   const [districts, setDistricts] = useState([]);
   const [wards, setWards] = useState([]);
 
+  const ranOnce = useRef(false);
+
   useEffect(() => {
-    // axios.get("/api/location/cities").then((res) => {
-    //   setCities(res.data.cities);
-    // });
-    setCities([
-      {
-        id: 1,
-        name: "Hồ Chí Minh",
-      },
-    ]);
+    if (!ranOnce.current) {
+      ranOnce.current = true;
+      axios
+        .get("/api/location/cities")
+        .then((res) => {
+          setCities(res.data);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    }
   }, []);
 
   useEffect(() => {
-    // axios.get(`/api/location/districts/${city}`).then((res) => {
-    //   setDistricts(res.data.districts);
-    // });
-    setDistricts([
-      {
-        id: 1,
-        name: "Quận 1",
-      },
-    ]);
+    if (city)
+      axios
+        .get("/api/location/districts/" + city)
+        .then((res) => {
+          setDistricts(res.data);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
   }, [city]);
 
   useEffect(() => {
-    // axios.get(`/api/location/wards/${district}`).then((res) => {
-    //   setWards(res.data.wards);
-    // });
-    setWards([
-      {
-        id: 1,
-        name: "Phường 1",
-      },
-    ]);
+    if (district)
+      axios
+        .get("/api/location/wards/" + district)
+        .then((res) => {
+          setWards(res.data);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
   }, [district]);
 
   useEffect(() => {
@@ -141,9 +148,73 @@ export default function PostProperty() {
     return true;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     checkValid();
+
+    let form = {
+      title: title,
+      ward: ward,
+      street: street,
+      description: description,
+      type: type,
+      price: price,
+      area: area,
+      direction: direction,
+      bedroom: bedroom,
+      bathroom: bathroom,
+      floor: floor,
+      videos: videos,
+    };
+
+    let res = await axios.post("/api/user/property", form, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (res.data?.message == "Property created") {
+      const propertyId = res.data?.id;
+
+      images.forEach((image) => {
+        const formData = new FormData();
+        formData.append("property", propertyId);
+        formData.append("type", "image");
+        formData.append("file", image);
+
+        axios.post("/api/user/property/uploadFile", formData, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+      });
+
+      panorama.forEach((pano) => {
+        const formData = new FormData();
+        formData.append("property", propertyId);
+        formData.append("file", pano);
+        formData.append("type", "panorama");
+
+        axios.post("/api/user/property/uploadFile", formData, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+      });
+
+      videos.forEach((video) => {
+        const formData = new FormData();
+        formData.append("property", propertyId);
+        formData.append("url", video.url);
+        formData.append("type", "video");
+
+        axios.post("/api/user/property/uploadFile", formData, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+      });
+    }
   };
 
   return (
@@ -180,7 +251,7 @@ export default function PostProperty() {
                 >
                   <option value="">Chọn thành phố</option>
                   {cities.map((city) => (
-                    <option key={city.id} value={city.name}>
+                    <option key={city.id} value={city.id}>
                       {city.name}
                     </option>
                   ))}
@@ -195,7 +266,7 @@ export default function PostProperty() {
                 >
                   <option value="">Chọn quận/huyện</option>
                   {districts.map((district) => (
-                    <option key={district.id} value={district.name}>
+                    <option key={district.id} value={district.id}>
                       {district.name}
                     </option>
                   ))}
@@ -210,7 +281,7 @@ export default function PostProperty() {
                 >
                   <option value="">Chọn phường/xã</option>
                   {wards.map((ward) => (
-                    <option key={ward.id} value={ward.name}>
+                    <option key={ward.id} value={ward.id}>
                       {ward.name}
                     </option>
                   ))}

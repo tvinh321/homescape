@@ -38,9 +38,15 @@ export default function Register({ screen, setScreen }) {
       const res = await axios.post("/api/register", {
         email: email,
         password: password,
+        confirmPassword: repassword,
       });
-      if (res.data?.message) {
-        setSuccess(res.data.message);
+      if (res.data?.message == "Registration successful") {
+        setSuccess(
+          "Đăng ký thành công. Vui lòng kiểm tra email để kích hoạt tài khoản"
+        );
+        setEmail("");
+        setPassword("");
+        setRepassword("");
       }
     } catch (err) {
       if (err.response?.data?.message == "Email already exists") {

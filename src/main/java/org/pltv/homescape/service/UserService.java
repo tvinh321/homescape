@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -26,6 +27,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -39,13 +41,13 @@ public class UserService implements UserDetailsService {
     private PasswordEncoder passwordEncoder;
 
     @Autowired
-    private JwtService jwtService;
-
-    @Autowired
     private LocationService locationService;
 
     @Autowired
     private FileService fileService;
+
+    @Autowired
+    private EmailService emailService;
 
     @Autowired
     @Lazy
@@ -72,24 +74,47 @@ public class UserService implements UserDetailsService {
         return user;
     }
 
-    public void register(RegisterReq registerPost) {
-        User user = new User();
-        user.setEmail(registerPost.getEmail());
-        user.setPassword(passwordEncoder.encode(registerPost.getPassword()));
-        user.setStatus((byte) 0);
-        userRepo.save(user);
+    public void register(RegisterReq registerPost) throws Exception {
+        try {
+            User user = new User();
+            user.setEmail(registerPost.getEmail());
+            user.setPassword(passwordEncoder.encode(registerPost.getPassword()));
+            user.setStatus((byte) 0);
+            userRepo.save(user);
+
+            emailService.sendVerifyEmail(user.getEmail());
+        } catch (DataIntegrityViolationException e) {
+            log.error("Email already exists");
+            throw new Exception("Email already exists");
+        } catch (Exception e) {
+            log.error("Error when registering");
+            throw new Exception("Error when registering");
+        }
     }
 
     public void verifyEmail(String token) throws Exception {
-        String userId = jwtService.getEmailFromToken(token);
-        User user = userRepo.findByEmail(userId);
+        Boolean verification = emailService.verifyEmailToken(token, false);
+        if (verification == false) {
+            log.error("Token is invalid");
+            throw new Exception("Token is invalid");
+        }
+
+        String email = emailService.getEmailFromToken(token);
+        if (email == null) {
+            log.error("Token is invalid");
+            throw new Exception("Token is invalid");
+        }
+
+        User user = userRepo.findByEmail(email);
         if (user == null) {
             log.error("User not found");
-            throw new Exception("User not found");
+            throw new UsernameNotFoundException("User not found");
         }
 
         user.setStatus((byte) 1);
         userRepo.save(user);
+
+        emailService.deleteEmailToken(token);
     }
 
     public boolean checkUserVerified(String email) {
@@ -102,27 +127,39 @@ public class UserService implements UserDetailsService {
         return user.getStatus() == 1;
     }
 
-    public String forgotPassword(String email) throws Exception {
+    public void forgotPassword(String email) throws Exception {
         User user = userRepo.findByEmail(email);
         if (user == null) {
             log.error("User not found");
             throw new Exception("User not found");
         }
 
-        String token = jwtService.generateToken(user);
-        return token;
+        emailService.sendResetEmail(user.getEmail());
     }
 
     public void resetPassword(String token, String newPassword) throws Exception {
-        String userId = jwtService.getEmailFromToken(token);
-        User user = userRepo.findByEmail(userId);
+        Boolean verification = emailService.verifyEmailToken(token, true);
+        if (verification == false) {
+            log.error("Token is invalid");
+            throw new Exception("Token is invalid");
+        }
+
+        String email = emailService.getEmailFromToken(token);
+        if (email == null) {
+            log.error("Token is invalid");
+            throw new Exception("Token is invalid");
+        }
+
+        User user = userRepo.findByEmail(email);
         if (user == null) {
             log.error("User not found");
-            throw new Exception("User not found");
+            throw new UsernameNotFoundException("User not found");
         }
 
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepo.save(user);
+
+        emailService.deleteEmailToken(token);
     }
 
     public void changePassword(String email, String oldPassword, String newPassword) {
