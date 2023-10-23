@@ -6,7 +6,6 @@ import { AuthContext } from "./contexts/AuthContext";
 import Landing from "./pages/Landing";
 import Authenticate from "./pages/Authenticate";
 import UserInfo from "./pages/UserInfo";
-import NotFound from "./pages/NotFound";
 import Search from "./pages/Search";
 import PostProperty from "./pages/PostProperty";
 import ViewProperty from "./pages/ViewProperty";

@@ -4,7 +4,7 @@ import { HeartIcon } from "@heroicons/react/24/outline";
 import axios, { baseURL } from "../../axiosConfig";
 
 export default function OutstandingProperties() {
-  const [houseList, setHouseList] = React.useState([]);
+  const [houseList, setHouseList] = React.useState();
   const ranOnce = React.useRef(false);
   const token = localStorage.getItem("token");
 
@@ -24,16 +24,12 @@ export default function OutstandingProperties() {
 
   const handleFavorite = async (id) => {
     if (!token) {
-      alert("Vui lòng đăng nhập để sử dụng chức năng này");
+      window.location.href = "/dang-nhap";
       return;
     }
 
     const favorite = houseList.find((house) => house.id === id).favorite;
     if (favorite) {
-      await axios.delete(`/api/user/favorite/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
       setHouseList((houseList) =>
         houseList.map((house) => {
           if (house.id === id) {
@@ -42,11 +38,10 @@ export default function OutstandingProperties() {
           return house;
         })
       );
-    } else {
-      await axios.get(`/api/user/favorite/${id}`, {
+      await axios.delete(`/api/user/favorite/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-
+    } else {
       setHouseList((houseList) =>
         houseList.map((house) => {
           if (house.id === id) {
@@ -55,6 +50,10 @@ export default function OutstandingProperties() {
           return house;
         })
       );
+
+      await axios.get(`/api/user/favorite/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
     }
   };
 

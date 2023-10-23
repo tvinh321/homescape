@@ -28,5 +28,20 @@
     "name": "sendgrid.from-email",
     "type": "java.lang.String",
     "description": "Email address to send emails from"
+  },
+  {
+    "name": "aws.bucket-name",
+    "type": "java.lang.String",
+    "description": "Bucket name for S3 Storage"
+  },
+  {
+    "name": "aws.access-key",
+    "type": "java.lang.String",
+    "description": "Access key for AWS"
+  },
+  {
+    "name": "aws.secret-key",
+    "type": "java.lang.String",
+    "description": "Secret key for AWS"
   }
 ]}

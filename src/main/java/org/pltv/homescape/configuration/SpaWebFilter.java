@@ -15,7 +15,8 @@ public class SpaWebFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-        if (request.getRequestURI().startsWith("/api/") || request.getRequestURI().startsWith("/assets/")) {
+        if (request.getRequestURI().startsWith("/api/") || request.getRequestURI().startsWith("/assets/")
+                || request.getRequestURI().startsWith("/homescape.svg")) {
             filterChain.doFilter(request, response);
         } else {
             request.getRequestDispatcher("/").forward(request, response);

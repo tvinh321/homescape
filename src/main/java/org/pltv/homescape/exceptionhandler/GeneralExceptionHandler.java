@@ -13,7 +13,6 @@ public class GeneralExceptionHandler {
 
     @ExceptionHandler({ Exception.class })
     public ResponseEntity<Object> handleException(Exception e) {
-        log.error("Exception: ", e);
         return ResponseEntity.status(500).body(
                 new ErrorResponse("Internal Server Error", "500", e.getMessage()));
     }

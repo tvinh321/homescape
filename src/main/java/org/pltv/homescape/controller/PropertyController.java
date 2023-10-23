@@ -1,6 +1,9 @@
 package org.pltv.homescape.controller;
 
+import java.io.ByteArrayOutputStream;
+import java.net.URL;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.pltv.homescape.dto.ErrorResponse;
 import org.pltv.homescape.dto.SuccessReponse;
@@ -13,8 +16,11 @@ import org.pltv.homescape.dto.property.PropertyInfoRes;
 import org.pltv.homescape.dto.property.PropertyListRes;
 import org.pltv.homescape.service.PropertyService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
+import org.springframework.http.CacheControl;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -156,11 +162,17 @@ public class PropertyController {
     }
 
     @GetMapping("/api/property/file/{propertyId}/{filename:.+}")
-    public ResponseEntity<Resource> getFile(@PathVariable String filename, @PathVariable Long propertyId) {
-        Resource file = propertyService.getFile(propertyId, filename);
+    public ResponseEntity<Object> getFile(@PathVariable String filename, @PathVariable Long propertyId) {
+        ByteArrayResource file = propertyService.getFile(propertyId, filename);
+
+        if (file == null) {
+            return ResponseEntity.notFound().build();
+        }
 
         return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getFilename() + "\"")
+                .contentType(MediaType.IMAGE_JPEG)
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
+                .cacheControl(CacheControl.maxAge(3600, TimeUnit.SECONDS))
                 .body(file);
     }
 }

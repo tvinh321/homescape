@@ -10,6 +10,8 @@ import { PlusCircleIcon } from "@heroicons/react/24/outline";
 
 import axios from "../axiosConfig";
 
+import imageCompression from "browser-image-compression";
+
 export default function PostProperty() {
   const token = localStorage.getItem("token");
   const [title, setTitle] = useState("");
@@ -152,7 +154,7 @@ export default function PostProperty() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    checkValid();
+    if (!checkValid()) return;
 
     setLoading(true);
 
@@ -180,8 +182,20 @@ export default function PostProperty() {
     if (res.data?.message == "Property created") {
       const propertyId = res.data?.id;
 
+      const imagesOptions = {
+        maxSizeMB: 0.3,
+        maxWidthOrHeight: 1600,
+        useWebWorker: true,
+      };
+
       let imagePromises = Promise.all(
         images.map(async (image) => {
+          image = await imageCompression(image, imagesOptions);
+
+          image = new File([image], image.name + ".jpg", {
+            type: "image/jpeg",
+          });
+
           const formData = new FormData();
           formData.append("property", propertyId);
           formData.append("type", "image");
@@ -195,8 +209,20 @@ export default function PostProperty() {
         })
       );
 
+      const panoramasOptions = {
+        maxSizeMB: 0.7,
+        maxWidthOrHeight: 8000,
+        useWebWorker: true,
+      };
+
       let panoPromises = Promise.all(
         panorama.map(async (pano) => {
+          pano = await imageCompression(pano, panoramasOptions);
+
+          pano = new File([pano], pano.name + ".jpg", {
+            type: "image/jpeg",
+          });
+
           const formData = new FormData();
           formData.append("property", propertyId);
           formData.append("type", "pano");
@@ -213,7 +239,7 @@ export default function PostProperty() {
       Promise.all([imagePromises, panoPromises])
         .then(() => {
           alert("Đăng tin thành công");
-          // window.location.href = "/bai-dang-cua-ban";
+          window.location.href = "/bai-dang-cua-ban";
           setLoading(false);
         })
         .catch((err) => {
@@ -484,6 +510,9 @@ export default function PostProperty() {
                         accept="image/*"
                         multiple
                         onChange={handleImages}
+                        onClick={(event) => {
+                          event.target.value = null;
+                        }}
                       />
                     </div>
                   </label>
@@ -530,6 +559,9 @@ export default function PostProperty() {
                         accept="image/*"
                         multiple
                         onChange={handlePanomaras}
+                        onClick={(event) => {
+                          event.target.value = null;
+                        }}
                       />
                     </div>
                   </label>

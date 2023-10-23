@@ -69,6 +69,10 @@ export default function ViewProperty() {
   }, []);
 
   const handleFavorite = async (id) => {
+    if (!token) {
+      window.location.href = "/dang-nhap";
+      return;
+    }
     const favorite = property?.favorite;
     if (favorite) {
       await axios.delete(`/api/user/favorite/${id}`, {

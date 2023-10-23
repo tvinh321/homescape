@@ -1,6 +1,8 @@
 package org.pltv.homescape.service;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.net.URL;
 import java.util.List;
 import java.util.UUID;
 
@@ -18,6 +20,7 @@ import org.pltv.homescape.repository.UserRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -49,6 +52,9 @@ public class UserService implements UserDetailsService {
 
     @Autowired
     private EmailService emailService;
+
+    @Autowired
+    private S3Service s3Service;
 
     @Autowired
     @Lazy
@@ -300,21 +306,29 @@ public class UserService implements UserDetailsService {
                 .build();
     }
 
-    public Resource getAvatar(UUID id) {
+    public ByteArrayResource getAvatar(UUID id) {
         User user = userRepo.findById(id).orElse(null);
         if (user == null) {
             log.error("User not found");
             throw new UsernameNotFoundException("User not found");
         }
 
-        File file = new File("avatars/" + user.getAvatar());
-        if (file.exists()) {
-            return new FileSystemResource(file);
+        // File file = new File("avatars/" + user.getAvatar());
+        // if (file.exists()) {
+        // return new FileSystemResource(file);
+        // }
+
+        // S3
+        try {
+            ByteArrayResource outputStream = s3Service.downloadFile("avatars/" + user.getAvatar());
+            return outputStream;
+        } catch (Exception e) {
+            log.error("Error downloading file from S3: " + e.getMessage());
         }
         return null;
     }
 
-    public void saveAvatar(MultipartFile file, String email) {
+    public void saveAvatar(MultipartFile file, String email) throws Exception {
         User user = userRepo.findByEmail(email);
         if (user == null) {
             log.error("User not found");
@@ -331,14 +345,23 @@ public class UserService implements UserDetailsService {
         String fileName = user.getId() + "." + fileExtension;
 
         // Save file to local storage
-        java.io.File dest = new java.io.File(
-                "avatars/" + fileName);
-        dest = dest.getAbsoluteFile();
+        // java.io.File dest = new java.io.File(
+        // "avatars/" + fileName);
+        // dest = dest.getAbsoluteFile();
+        // try {
+        // file.transferTo(dest);
+        // } catch (Exception e) {
+        // log.error("Error when saving file");
+        // throw new IllegalArgumentException("Error when saving file");
+        // }
+
+        // Save file to S3
         try {
-            file.transferTo(dest);
+            s3Service.delete("avatars/" + user.getAvatar());
+            s3Service.uploadFile(file, "avatars/" + fileName);
         } catch (Exception e) {
             log.error("Error when saving file");
-            throw new IllegalArgumentException("Error when saving file");
+            throw e;
         }
 
         user.setAvatar(fileName);

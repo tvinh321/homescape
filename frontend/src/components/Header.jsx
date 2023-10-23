@@ -8,6 +8,7 @@ import { baseURL } from "../axiosConfig";
 
 export default function Header() {
   const { user, setUser } = useContext(AuthContext);
+  const token = localStorage.getItem("token");
 
   const [userMenu, setUserMenu] = useState(false);
 

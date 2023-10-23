@@ -43,39 +43,35 @@ export default function FavoritePost() {
     e.preventDefault();
     const favorite = properties.find((property) => property.id === id).favorite;
     if (favorite) {
+      setProperties(
+        properties.map((property) => {
+          if (property.id === id) {
+            return { ...property, favorite: false };
+          }
+          return property;
+        })
+      );
       axios
         .delete(`/api/user/favorite/${id}`, {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-        })
-        .then((res) => {
-          setProperties(
-            properties.map((property) => {
-              if (property.id === id) {
-                return { ...property, favorite: false };
-              }
-              return property;
-            })
-          );
         })
         .catch((err) => {
           console.log(err);
         });
     } else {
+      setProperties(
+        properties.map((property) => {
+          if (property.id === id) {
+            return { ...property, favorite: true };
+          }
+          return property;
+        })
+      );
       axios
         .get(`/api/user/favorite/${id}`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
-        })
-        .then((res) => {
-          setProperties(
-            properties.map((property) => {
-              if (property.id === id) {
-                return { ...property, favorite: true };
-              }
-              return property;
-            })
-          );
         })
         .catch((err) => {
           console.log(err);

@@ -1,6 +1,8 @@
 package org.pltv.homescape.service;
 
 import java.util.UUID;
+import java.io.ByteArrayOutputStream;
+import java.net.URL;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -15,6 +17,7 @@ import org.pltv.homescape.dto.property.PropertyQueryRes;
 import org.pltv.homescape.model.Property;
 import org.pltv.homescape.model.Ward;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -310,7 +313,7 @@ public class PropertyService {
         }
     }
 
-    public Resource getFile(Long propertyId, String filename) {
+    public ByteArrayResource getFile(Long propertyId, String filename) {
         return fileService.getPropertyFile(propertyId, filename);
     }
 }

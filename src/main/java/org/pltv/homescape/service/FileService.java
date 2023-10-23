@@ -1,6 +1,8 @@
 package org.pltv.homescape.service;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -11,6 +13,7 @@ import org.pltv.homescape.model.Property;
 import org.pltv.homescape.repository.FileRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
@@ -23,6 +26,9 @@ import lombok.extern.slf4j.Slf4j;
 public class FileService {
     @Autowired
     private FileRepository fileRepo;
+
+    @Autowired
+    private S3Service s3Service;
 
     @Autowired
     @Lazy
@@ -72,39 +78,59 @@ public class FileService {
         newFile.setType(type);
         newFile.setPath(property.getId() + "/" + fileName);
 
-        // Create directory if not exist
-        java.io.File directory = new java.io.File("properties/" + property.getId());
-        if (!directory.exists()) {
-            directory.mkdirs();
-        }
+        // // Create directory if not exist
+        // java.io.File directory = new java.io.File("properties/" + property.getId());
+        // if (!directory.exists()) {
+        // directory.mkdirs();
+        // }
 
-        // Save file to local storage
-        java.io.File dest = new java.io.File(
-                "properties/" + property.getId() + "/" + fileName);
-        dest = dest.getAbsoluteFile();
-        file.transferTo(dest);
+        // // Save file to local storage
+        // java.io.File dest = new java.io.File(
+        // "properties/" + property.getId() + "/" + fileName);
+        // dest = dest.getAbsoluteFile();
+        // file.transferTo(dest);
+
+        // Save file to S3
+        s3Service.uploadFile(file, "properties/" + property.getId() + "/" + fileName);
 
         fileRepo.save(newFile);
     }
 
-    public Resource getPropertyFile(Long propertyId, String filename) {
-        java.io.File file = new java.io.File("properties/" + propertyId + "/" + filename);
-        if (file.exists()) {
-            return new FileSystemResource(file);
+    public ByteArrayResource getPropertyFile(Long propertyId, String filename) {
+        // java.io.File file = new java.io.File("properties/" + propertyId + "/" +
+        // filename);
+        // if (file.exists()) {
+        // return new FileSystemResource(file);
+        // }
+
+        // S3
+        try {
+            ByteArrayResource outputStream = s3Service.downloadFile("properties/" + propertyId + "/" + filename);
+            return outputStream;
+        } catch (Exception e) {
+            log.error("Error downloading file from S3: " + e.getMessage());
         }
+
         return null;
     }
 
     public void deleteAllFiles(Long propertyId) {
         List<File> files = fileRepo.findByPropertyId(propertyId);
 
-        java.io.File directory = new java.io.File("properties/" + propertyId);
-        if (directory.exists()) {
-            java.io.File[] filesInDirectory = directory.listFiles();
-            for (java.io.File file : filesInDirectory) {
-                file.delete();
-            }
-            directory.delete();
+        // java.io.File directory = new java.io.File("properties/" + propertyId);
+        // if (directory.exists()) {
+        // java.io.File[] filesInDirectory = directory.listFiles();
+        // for (java.io.File file : filesInDirectory) {
+        // file.delete();
+        // }
+        // directory.delete();
+        // }
+
+        // S3
+        try {
+            s3Service.deleteAllFiles("properties/" + propertyId);
+        } catch (Exception e) {
+            log.error("Error deleting files from S3: " + e.getMessage());
         }
 
         fileRepo.deleteAll(files);

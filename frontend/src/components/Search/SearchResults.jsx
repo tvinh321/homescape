@@ -89,12 +89,12 @@ export default function SearchResults() {
   }, [page, sortOption]);
 
   const handleFavorite = async (id) => {
+    if (!token) {
+      window.location.href = "/dang-nhap";
+      return;
+    }
     const favorite = sortedResults.find((house) => house.id === id).favorite;
     if (favorite) {
-      await axios.delete(`/api/user/favorite/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
       setSortedResults((sortedResults) =>
         sortedResults.map((house) => {
           if (house.id === id) {
@@ -103,11 +103,10 @@ export default function SearchResults() {
           return house;
         })
       );
-    } else {
-      await axios.get(`/api/user/favorite/${id}`, {
+      await axios.delete(`/api/user/favorite/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-
+    } else {
       setSortedResults((sortedResults) =>
         sortedResults.map((house) => {
           if (house.id === id) {
@@ -116,6 +115,9 @@ export default function SearchResults() {
           return house;
         })
       );
+      await axios.get(`/api/user/favorite/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
     }
   };
 

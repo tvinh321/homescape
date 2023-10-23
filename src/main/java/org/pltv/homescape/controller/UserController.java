@@ -1,7 +1,10 @@
 package org.pltv.homescape.controller;
 
+import java.io.ByteArrayOutputStream;
+import java.net.URL;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import org.pltv.homescape.dto.ErrorResponse;
 import org.pltv.homescape.dto.SuccessReponse;
@@ -21,8 +24,11 @@ import org.pltv.homescape.service.EmailService;
 import org.pltv.homescape.service.JwtService;
 import org.pltv.homescape.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
+import org.springframework.http.CacheControl;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -251,15 +257,17 @@ public class UserController {
     }
 
     @GetMapping("/api/avatar/{id}")
-    public ResponseEntity<Resource> getAvatar(@PathVariable("id") UUID id) {
-        Resource file = userService.getAvatar(id);
-        if (file == null) {
+    public ResponseEntity<Object> getAvatar(@PathVariable("id") UUID id) {
+        ByteArrayResource avatar = userService.getAvatar(id);
+
+        if (avatar == null) {
             return ResponseEntity.notFound().build();
         }
 
         return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getFilename() + "\"")
-                .body(file);
+                .contentType(MediaType.IMAGE_JPEG)
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + "avatar" + "\"")
+                .body(avatar);
     }
 
     @PostMapping("/api/user/avatar")

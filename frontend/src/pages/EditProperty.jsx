@@ -12,6 +12,8 @@ import axios, { baseURL } from "../axiosConfig";
 
 import { useParams } from "react-router-dom";
 
+import imageCompression from "browser-image-compression";
+
 export default function PostProperty() {
   const { id } = useParams();
   const token = localStorage.getItem("token");
@@ -89,15 +91,17 @@ export default function PostProperty() {
   });
 
   useEffect(() => {
-    axios.get(`/api/location/districts/${city}`).then((res) => {
-      setDistricts(res.data);
-    });
+    if (city)
+      axios.get(`/api/location/districts/${city}`).then((res) => {
+        setDistricts(res.data);
+      });
   }, [city]);
 
   useEffect(() => {
-    axios.get(`/api/location/wards/${district}`).then((res) => {
-      setWards(res.data);
-    });
+    if (district)
+      axios.get(`/api/location/wards/${district}`).then((res) => {
+        setWards(res.data);
+      });
   }, [district]);
 
   const checkValid = () => {
@@ -193,8 +197,20 @@ export default function PostProperty() {
     if (res.data?.message == "Success") {
       const propertyId = id;
 
+      const imagesOptions = {
+        maxSizeMB: 0.3,
+        maxWidthOrHeight: 1600,
+        useWebWorker: true,
+      };
+
       let imagePromises = Promise.all(
         images.map(async (image) => {
+          image = await imageCompression(image, imagesOptions);
+
+          image = new File([image], image.name + ".jpg", {
+            type: "image/jpeg",
+          });
+
           const formData = new FormData();
           formData.append("property", propertyId);
           formData.append("type", "image");
@@ -208,8 +224,20 @@ export default function PostProperty() {
         })
       );
 
+      const panoramasOptions = {
+        maxSizeMB: 0.7,
+        maxWidthOrHeight: 8000,
+        useWebWorker: true,
+      };
+
       let panoPromises = Promise.all(
         panorama.map(async (pano) => {
+          pano = await imageCompression(pano, panoramasOptions);
+
+          pano = new File([pano], pano.name + ".jpg", {
+            type: "image/jpeg",
+          });
+
           const formData = new FormData();
           formData.append("property", propertyId);
           formData.append("type", "pano");
@@ -226,7 +254,7 @@ export default function PostProperty() {
       Promise.all([imagePromises, panoPromises])
         .then(() => {
           alert("Chỉnh sửa tin thành công");
-          // window.location.href = "/bai-dang-cua-ban";
+          window.location.href = "/bai-dang-cua-ban";
           setLoading(false);
         })
         .catch((err) => {
