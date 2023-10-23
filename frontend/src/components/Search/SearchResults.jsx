@@ -159,7 +159,7 @@ export default function SearchResults() {
                   <a href={`/bai-dang/${house.id}`} key={index}>
                     <div className="flex border w-full hover:shadow-xl transition-all duration-200">
                       <img
-                        className="object-cover h-48 w-64"
+                        className="object-cover h-48 w-64 min-w-[16rem]"
                         src={baseURL + "/api/property/file/" + house.image}
                         alt="Ảnh nhà đất"
                       />

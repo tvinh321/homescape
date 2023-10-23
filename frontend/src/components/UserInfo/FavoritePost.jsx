@@ -94,7 +94,7 @@ export default function FavoritePost() {
                 <>
                   <div className="flex border w-full hover:shadow-xl transition-all duration-200">
                     <img
-                      className="object-cover h-48 w-64 cursor-pointer"
+                      className="object-cover h-48 w-64 min-w-[16rem] cursor-pointer"
                       src={baseURL + "/api/property/file/" + house.image}
                       alt="Ảnh nhà đất"
                       onClick={(e) => {
