@@ -256,9 +256,9 @@ public class UserController {
         return ResponseEntity.ok().body(SuccessReponse.builder().message("Favorite removed").build());
     }
 
-    @GetMapping("/api/avatar/{id}")
-    public ResponseEntity<Object> getAvatar(@PathVariable("id") UUID id) {
-        ByteArrayResource avatar = userService.getAvatar(id);
+    @GetMapping("/api/avatar/{fileName}")
+    public ResponseEntity<Object> getAvatar(@PathVariable("fileName") String fileName) {
+        ByteArrayResource avatar = userService.getAvatar(fileName);
 
         if (avatar == null) {
             return ResponseEntity.notFound().build();
@@ -266,7 +266,8 @@ public class UserController {
 
         return ResponseEntity.ok()
                 .contentType(MediaType.IMAGE_JPEG)
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + "avatar" + "\"")
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"")
+                .cacheControl(CacheControl.maxAge(30, TimeUnit.DAYS))
                 .body(avatar);
     }
 

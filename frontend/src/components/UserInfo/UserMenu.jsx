@@ -49,7 +49,7 @@ export default function UserMenu({ selected, setSelected }) {
             src={
               file
                 ? URL.createObjectURL(file)
-                : baseURL + `/api/avatar/${user.id}`
+                : baseURL + `/api/avatar/${user.avatar}`
             }
           />
           <span className="absolute right-0 bottom-1">

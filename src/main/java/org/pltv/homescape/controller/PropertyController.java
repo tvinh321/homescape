@@ -172,7 +172,7 @@ public class PropertyController {
         return ResponseEntity.ok()
                 .contentType(MediaType.IMAGE_JPEG)
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
-                .cacheControl(CacheControl.maxAge(3600, TimeUnit.SECONDS))
+                .cacheControl(CacheControl.maxAge(1, TimeUnit.HOURS))
                 .body(file);
     }
 }

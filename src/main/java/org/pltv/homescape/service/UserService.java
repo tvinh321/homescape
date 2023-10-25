@@ -306,13 +306,7 @@ public class UserService implements UserDetailsService {
                 .build();
     }
 
-    public ByteArrayResource getAvatar(UUID id) {
-        User user = userRepo.findById(id).orElse(null);
-        if (user == null) {
-            log.error("User not found");
-            throw new UsernameNotFoundException("User not found");
-        }
-
+    public ByteArrayResource getAvatar(String fileName) {
         // File file = new File("avatars/" + user.getAvatar());
         // if (file.exists()) {
         // return new FileSystemResource(file);
@@ -320,7 +314,7 @@ public class UserService implements UserDetailsService {
 
         // S3
         try {
-            ByteArrayResource outputStream = s3Service.downloadFile("avatars/" + user.getAvatar());
+            ByteArrayResource outputStream = s3Service.downloadFile("avatars/" + fileName);
             return outputStream;
         } catch (Exception e) {
             log.error("Error downloading file from S3: " + e.getMessage());

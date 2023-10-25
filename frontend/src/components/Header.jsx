@@ -52,57 +52,59 @@ export default function Header() {
                 </a>
               </li>
               <li className="mr-10">
-                {user ? (
-                  <div className="relative">
-                    <img
-                      src={baseURL + "/api/avatar/" + user.id}
-                      alt="avatar"
-                      className="h-14 w-14 rounded-full cursor-pointer object-cover"
-                      onClick={() => {
-                        setUserMenu((prev) => !prev);
-                      }}
-                    />
+                {token ? (
+                  user && (
+                    <div className="relative">
+                      <img
+                        src={baseURL + "/api/avatar/" + user?.avatar}
+                        alt="avatar"
+                        className="h-14 w-14 rounded-full cursor-pointer object-cover"
+                        onClick={() => {
+                          setUserMenu((prev) => !prev);
+                        }}
+                      />
 
-                    <CSSTransition
-                      in={userMenu}
-                      timeout={150}
-                      classNames="list-dropdown"
-                      unmountOnExit
-                    >
-                      <div className="absolute right-0 mt-4 w-48 bg-white rounded-md shadow-lg border py-1 z-50">
-                        <a
-                          href="/nguoi-dung"
-                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-700 hover:text-white"
-                        >
-                          Thông tin cá nhân
-                        </a>
-                        <a
-                          href="/thay-doi-mat-khau"
-                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-700 hover:text-white"
-                        >
-                          Thay đổi mật khẩu
-                        </a>
-                        <a
-                          href="/bai-dang-cua-ban"
-                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-700 hover:text-white"
-                        >
-                          Bài đăng của bạn
-                        </a>
-                        <a
-                          href="#"
-                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-700 hover:text-white"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            localStorage.removeItem("token");
-                            setUser(null);
-                            window.location.href = "/";
-                          }}
-                        >
-                          Đăng xuất
-                        </a>
-                      </div>
-                    </CSSTransition>
-                  </div>
+                      <CSSTransition
+                        in={userMenu}
+                        timeout={150}
+                        classNames="list-dropdown"
+                        unmountOnExit
+                      >
+                        <div className="absolute right-0 mt-4 w-48 bg-white rounded-md shadow-lg border py-1 z-50">
+                          <a
+                            href="/nguoi-dung"
+                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-700 hover:text-white"
+                          >
+                            Thông tin cá nhân
+                          </a>
+                          <a
+                            href="/thay-doi-mat-khau"
+                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-700 hover:text-white"
+                          >
+                            Thay đổi mật khẩu
+                          </a>
+                          <a
+                            href="/bai-dang-cua-ban"
+                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-700 hover:text-white"
+                          >
+                            Bài đăng của bạn
+                          </a>
+                          <a
+                            href="#"
+                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-700 hover:text-white"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              localStorage.removeItem("token");
+                              setUser(null);
+                              window.location.href = "/";
+                            }}
+                          >
+                            Đăng xuất
+                          </a>
+                        </div>
+                      </CSSTransition>
+                    </div>
+                  )
                 ) : (
                   <a href="/dang-nhap">
                     <button className="bg-blue-700 text-white  hover:bg-blue-800 font-bold py-2 px-4 rounded transition-all duration-150 flex justify-center items-center">
