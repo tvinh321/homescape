@@ -23,6 +23,12 @@ export default function PageRoute() {
   useEffect(() => {
     const checkLoggedIn = async () => {
       if (token) {
+        // Check expired token
+        if (JSON.parse(atob(token.split(".")[1]))?.exp < Date.now() / 1000) {
+          localStorage.removeItem("token");
+          return;
+        }
+
         const res = await axios.get("/api/user/info", {
           headers: { Authorization: `Bearer ${token}` },
         });
