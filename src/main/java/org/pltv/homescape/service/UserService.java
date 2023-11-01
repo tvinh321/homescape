@@ -303,6 +303,7 @@ public class UserService implements UserDetailsService {
                 .name(user.getName())
                 .phone(user.getPhone())
                 .email(user.getEmail())
+                .avatar(user.getAvatar())
                 .build();
     }
 
@@ -336,7 +337,7 @@ public class UserService implements UserDetailsService {
             throw new IllegalArgumentException("File extension is not supported");
         }
 
-        String fileName = user.getId() + "." + fileExtension;
+        String fileName = user.getId() + "_" + String.valueOf(System.currentTimeMillis()) + "." + fileExtension;
 
         // Save file to local storage
         // java.io.File dest = new java.io.File(
@@ -351,7 +352,8 @@ public class UserService implements UserDetailsService {
 
         // Save file to S3
         try {
-            s3Service.delete("avatars/" + user.getAvatar());
+            if (!user.getAvatar().equals("default.webp"))
+                s3Service.delete("avatars/" + user.getAvatar());
             s3Service.uploadFile(file, "avatars/" + fileName);
         } catch (Exception e) {
             log.error("Error when saving file");

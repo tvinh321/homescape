@@ -246,7 +246,7 @@ export default function ViewProperty() {
             <div className="w-1/4 ml-10 flex flex-col items-center py-10">
               <p>Được đăng bởi</p>
               <img
-                src={baseURL + "/api/avatar/" + property?.author?.id}
+                src={baseURL + "/api/avatar/" + property?.author?.avatar}
                 alt="avatar"
                 className="rounded-full w-32 h-32 my-4 object-cover"
               />

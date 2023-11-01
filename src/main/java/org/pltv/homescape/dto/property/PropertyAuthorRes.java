@@ -16,4 +16,5 @@ public class PropertyAuthorRes {
     private String name;
     private String phone;
     private String email;
+    private String avatar;
 }

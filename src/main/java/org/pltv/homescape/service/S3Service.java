@@ -68,12 +68,13 @@ public class S3Service {
     }
 
     public boolean delete(String fileName) {
-        File file = Paths.get(fileName).toFile();
-        if (file.exists()) {
-            file.delete();
+        try {
+            s3Client.deleteObject(bucketName, fileName);
             return true;
+        } catch (Exception e) {
+            log.error("Error while deleting file from S3", e);
+            throw e;
         }
-        return false;
     }
 
     private boolean bucketIsEmpty() {
