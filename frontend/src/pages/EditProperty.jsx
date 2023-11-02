@@ -50,8 +50,43 @@ export default function PostProperty() {
         setCities(res.data);
       });
 
-      axios.get("/api/property/" + id).then((res) => {
+      axios.get("/api/property/" + id).then(async (res) => {
         const property = res.data.data;
+
+        let images = [];
+        let panorama = [];
+        let videos = [];
+
+        const filePromises = property.files.map(async (file, index) => {
+          if (file.type !== "video") {
+            const res = await axios.get(
+              baseURL + "/api/property/file/" + file.url,
+              {
+                responseType: "blob",
+              }
+            );
+
+            const name = file.url?.split("/")?.pop();
+
+            const imageFile = new File([res.data], name, {
+              type: "image/jpeg",
+            });
+            if (file.type === "image") images.push(imageFile);
+            else if (file.type === "pano") panorama.push(imageFile);
+          } else {
+            videos.push({
+              id: videos.length,
+              url: file.url,
+            });
+          }
+        });
+
+        await Promise.all(filePromises);
+
+        setImages(images);
+        setPanorama(panorama);
+        setVideos(videos);
+
         setTitle(property.title);
         setStreet(property.street);
         setCity(property.city);
@@ -65,27 +100,6 @@ export default function PostProperty() {
         setBedroom(property.bedroom);
         setBathroom(property.bathroom);
         setFloor(property.floor);
-
-        property.files.forEach((file) => {
-          if (file.type != "video") {
-            axios
-              .get(baseURL + "/api/property/file/" + file.url, {
-                responseType: "blob",
-              })
-              .then((res) => {
-                const imageFile = new File([res.data], "image.jpg", {
-                  type: "image/jpeg",
-                });
-                if (file.type == "image") images.push(imageFile);
-                else if (file.type == "pano") panorama.push(imageFile);
-              });
-          } else {
-            videos.push({
-              id: videos.length,
-              url: file.url,
-            });
-          }
-        });
       });
     }
   });
@@ -216,7 +230,7 @@ export default function PostProperty() {
           formData.append("type", "image");
           formData.append("file", image);
 
-          axios.post("/api/user/property/uploadFile", formData, {
+          return axios.post("/api/user/property/uploadFile", formData, {
             headers: {
               Authorization: `Bearer ${token}`,
             },
