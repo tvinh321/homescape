@@ -18,6 +18,7 @@ export default function PageRoute() {
   const [user, setUser] = useState(null);
   const ranOnce = useRef(false);
   const token = localStorage.getItem("token");
+  const [done, setDone] = useState(false);
 
   // Check if user is logged in using HttpOnly cookie
   useEffect(() => {
@@ -26,6 +27,7 @@ export default function PageRoute() {
         // Check expired token
         if (JSON.parse(atob(token.split(".")[1]))?.exp < Date.now() / 1000) {
           localStorage.removeItem("token");
+          setDone(true);
           return;
         }
 
@@ -35,6 +37,8 @@ export default function PageRoute() {
 
         setUser(res.data?.data);
       }
+
+      setDone(true);
     };
 
     if (!ranOnce.current) {
@@ -45,26 +49,28 @@ export default function PageRoute() {
 
   return (
     <AuthContext.Provider value={{ user, setUser }}>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Landing />} />
-          <Route path="/dang-nhap" element={<Authenticate />} />
-          <Route path="/tim-kiem" element={<Search />} />
-          <Route path="/bai-dang/:id" element={<ViewProperty />} />
-          <Route path="/dat-mat-khau/:token" element={<ResetPassword />} />
-          <Route path="/xac-thuc/:token" element={<EmailVerify />} />
-          {user && (
-            <>
-              <Route path="/nguoi-dung" element={<UserInfo />} />
-              <Route path="/thay-doi-mat-khau" element={<UserInfo />} />
-              <Route path="/bai-dang-cua-ban" element={<UserInfo />} />
-              <Route path="/bai-dang-da-luu" element={<UserInfo />} />
-              <Route path="/dang-tin" element={<PostProperty />} />
-              <Route path="/chinh-sua/:id" element={<EditProperty />} />
-            </>
-          )}
-        </Routes>
-      </BrowserRouter>
+      {done && (
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Landing />} />
+            <Route path="/dang-nhap" element={<Authenticate />} />
+            <Route path="/tim-kiem" element={<Search />} />
+            <Route path="/bai-dang/:id" element={<ViewProperty />} />
+            <Route path="/dat-mat-khau/:token" element={<ResetPassword />} />
+            <Route path="/xac-thuc/:token" element={<EmailVerify />} />
+            {user && (
+              <>
+                <Route path="/nguoi-dung" element={<UserInfo />} />
+                <Route path="/thay-doi-mat-khau" element={<UserInfo />} />
+                <Route path="/bai-dang-cua-ban" element={<UserInfo />} />
+                <Route path="/bai-dang-da-luu" element={<UserInfo />} />
+                <Route path="/dang-tin" element={<PostProperty />} />
+                <Route path="/chinh-sua/:id" element={<EditProperty />} />
+              </>
+            )}
+          </Routes>
+        </BrowserRouter>
+      )}
     </AuthContext.Provider>
   );
 }
