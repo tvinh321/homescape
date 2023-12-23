@@ -17,6 +17,7 @@ import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
+import org.springframework.util.FileCopyUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import lombok.extern.slf4j.Slf4j;
@@ -84,28 +85,31 @@ public class FileService {
         // directory.mkdirs();
         // }
 
-        // // Save file to local storage
+        // Save file to local storage
         // java.io.File dest = new java.io.File(
         // "properties/" + property.getId() + "/" + fileName);
         // dest = dest.getAbsoluteFile();
         // file.transferTo(dest);
 
         // Save file to S3
-        s3Service.uploadFile(file, "properties/" + property.getId() + "/" + fileName);
+        s3Service.uploadFile(file, "properties/" + property.getId() + "/" +
+                fileName);
 
         fileRepo.save(newFile);
     }
 
-    public ByteArrayResource getPropertyFile(Long propertyId, String filename) {
+    public ByteArrayResource getPropertyFile(Long propertyId, String filename) throws IOException {
         // java.io.File file = new java.io.File("properties/" + propertyId + "/" +
         // filename);
         // if (file.exists()) {
-        // return new FileSystemResource(file);
+        // byte[] fileContent = FileCopyUtils.copyToByteArray(file);
+        // return new ByteArrayResource(fileContent);
         // }
 
         // S3
         try {
-            ByteArrayResource outputStream = s3Service.downloadFile("properties/" + propertyId + "/" + filename);
+            ByteArrayResource outputStream = s3Service.downloadFile("properties/" +
+                    propertyId + "/" + filename);
             return outputStream;
         } catch (Exception e) {
             log.error("Error downloading file from S3: " + e.getMessage());

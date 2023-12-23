@@ -13,7 +13,7 @@
     "@heroicons/react": "^2.0.18",
     "@tailwindcss/line-clamp": "^0.4.4",
     "@trendyol-js/react-carousel": "^3.0.2",
-    "axios": "^1.4.0",
+    "axios": "^1.6.0",
     "browser-image-compression": "^2.0.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

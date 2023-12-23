@@ -177,7 +177,7 @@ export default function ViewProperty() {
                   />
                 </button>
               </div>
-              <h2 className="text-gray-400 mb-6">{property?.address}</h2>
+              <h2 className="text-gray-600 mb-6 mt-2">{property?.location}</h2>
               <div className="flex items-center">
                 <h1 className="text-2xl font-semibold text-red-600">
                   {property?.price.toLocaleString("vi-VN", {
@@ -236,11 +236,13 @@ export default function ViewProperty() {
               {property?.description}
             </p>
             <h1 className="font-semibold text-2xl mb-4 mt-6">Bản đồ</h1>
-            <iframe
-              className="w-full h-96"
-              title="map"
-              src={`https://maps.google.com/maps?hl=vi&q=${property?.location}&ie=UTF8&t=&z=14&iwloc=B&output=embed`}
-            />
+            {property?.location && (
+              <iframe
+                className="w-full h-96"
+                title="map"
+                src={`https://maps.google.com/maps?hl=vi&q=${property?.location}&ie=UTF8&t=&z=14&iwloc=B&output=embed`}
+              />
+            )}
           </div>
           {property?.author && (
             <div className="w-1/4 ml-10 flex flex-col items-center py-10">

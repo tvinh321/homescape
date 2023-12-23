@@ -1,6 +1,7 @@
 package org.pltv.homescape.controller;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 import java.util.UUID;
@@ -19,6 +20,9 @@ import org.pltv.homescape.dto.user.RegisterReq;
 import org.pltv.homescape.dto.user.RegisterRes;
 import org.pltv.homescape.dto.user.ResetPasswordReq;
 import org.pltv.homescape.dto.user.UserInfoReq;
+import org.pltv.homescape.exception.BadRequestException;
+import org.pltv.homescape.exception.InternalServerException;
+import org.pltv.homescape.exception.NotFoundException;
 import org.pltv.homescape.model.User;
 import org.pltv.homescape.service.EmailService;
 import org.pltv.homescape.service.JwtService;
@@ -64,16 +68,15 @@ public class UserController {
     private EmailService emailService;
 
     @PostMapping("/api/login")
-    public ResponseEntity<Object> login(@RequestBody LoginReq loginPost) {
+    public ResponseEntity<LoginRes> login(@RequestBody LoginReq loginPost)
+            throws BadRequestException, InternalServerException {
         if (loginPost.getEmail() == null || loginPost.getPassword() == null) {
-            return ResponseEntity.badRequest()
-                    .body(ErrorResponse.builder().code("400").error("Bad Request").message("Missing field").build());
+            throw new BadRequestException("Missing field");
         }
 
         try {
             if (userService.checkUserVerified(loginPost.getEmail()) == false) {
-                return ResponseEntity.badRequest().body(ErrorResponse.builder().code("400").error("Bad Request")
-                        .message("User not verified").build());
+                throw new BadRequestException("User not verified");
             }
 
             Authentication authentication = authenticationManager
@@ -81,75 +84,65 @@ public class UserController {
                             loginPost.getPassword()));
 
             if (authentication.isAuthenticated()) {
-                return ResponseEntity.ok().body(
-                        new LoginRes(loginPost.getEmail(),
-                                jwtService.generateToken((User) authentication.getPrincipal())));
+                return ResponseEntity.ok().body(LoginRes.builder().email(loginPost.getEmail())
+                        .token(jwtService.generateToken((User) authentication.getPrincipal())).build());
             } else {
                 log.error("Authentication failed");
-                return ResponseEntity.internalServerError()
-                        .body(ErrorResponse.builder().code("500").error("Internal Server Error")
-                                .message("Authentication failed").build());
+                throw new InternalServerException("Authentication failed");
             }
         } catch (BadCredentialsException e) {
             log.info(e.getMessage());
-            return ResponseEntity.badRequest().body(ErrorResponse.builder().code("400").error("Bad Request")
-                    .message("Invalid password").build());
+            throw new BadRequestException("Invalid password");
         } catch (UsernameNotFoundException e) {
-            return ResponseEntity.badRequest().body(ErrorResponse.builder().code("400").error("Bad Request")
-                    .message("Email not found").build());
+            log.info(e.getMessage());
+            throw new BadRequestException("Email not found");
         }
     }
 
     @PostMapping("/api/register")
-    public ResponseEntity<Object> register(@RequestBody RegisterReq registerPost) throws Exception {
+    public ResponseEntity<RegisterRes> register(@RequestBody RegisterReq registerPost) throws Exception {
         if (registerPost.getEmail() == null || registerPost.getPassword() == null
                 || registerPost.getConfirmPassword() == null) {
-            return ResponseEntity.badRequest()
-                    .body(ErrorResponse.builder().code("400").error("Bad Request").message("Missing field").build());
+            throw new BadRequestException("Missing field");
         }
 
         if (!registerPost.getPassword().equals(registerPost.getConfirmPassword())) {
-            return ResponseEntity.badRequest().body(ErrorResponse.builder().code("400").error("Bad Request")
-                    .message("Passwords don't match").build());
+            throw new BadRequestException("Passwords don't match");
         }
 
         userService.register(registerPost);
         return ResponseEntity.ok().body(new RegisterRes(registerPost.getEmail(), "Registration successful"));
-
     }
 
     @PostMapping("/api/checkToken")
-    public ResponseEntity<Object> checkToken(@RequestBody CheckTokenReq token) throws Exception {
+    public ResponseEntity<SuccessReponse> checkToken(@RequestBody CheckTokenReq token) throws Exception {
         if (token == null) {
-            return ResponseEntity.badRequest()
-                    .body(ErrorResponse.builder().code("400").error("Bad Request").message("Missing field").build());
+            throw new BadRequestException("Missing field");
         }
 
         try {
             Boolean verify = emailService.verifyEmailToken(token.getToken(), true);
             if (verify == false) {
-                return ResponseEntity.badRequest().body(ErrorResponse.builder().code("400").error("Bad Request")
-                        .message("Invalid token").build());
+                throw new BadRequestException("Invalid token");
             }
 
             return ResponseEntity.ok().body(SuccessReponse.builder().message("Valid token").build());
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(ErrorResponse.builder().code("400").error("Bad Request")
-                    .message("Invalid token").build());
+            throw new BadRequestException("Invalid token");
         }
     }
 
     @GetMapping("/api/verify/{token}")
-    public ResponseEntity<Object> verify(@PathVariable("token") String token) throws Exception {
+    public ResponseEntity<SuccessReponse> verify(@PathVariable("token") String token) throws Exception {
         userService.verifyEmail(token);
         return ResponseEntity.ok().body(SuccessReponse.builder().message("Email verified").build());
     }
 
     @PostMapping("/api/forgotPassword")
-    public ResponseEntity<Object> forgotPassword(@RequestBody ForgetPasswordReq forgetPasswordReq) throws Exception {
+    public ResponseEntity<SuccessReponse> forgotPassword(@RequestBody ForgetPasswordReq forgetPasswordReq)
+            throws Exception {
         if (forgetPasswordReq.getEmail() == null) {
-            return ResponseEntity.badRequest()
-                    .body(ErrorResponse.builder().code("400").error("Bad Request").message("Missing field").build());
+            throw new BadRequestException("Missing field");
         }
 
         userService.forgotPassword(forgetPasswordReq.getEmail());
@@ -159,15 +152,14 @@ public class UserController {
     }
 
     @PostMapping("/api/resetPassword")
-    public ResponseEntity<Object> resetPassword(@RequestBody ResetPasswordReq resetPasswordPost) throws Exception {
+    public ResponseEntity<SuccessReponse> resetPassword(@RequestBody ResetPasswordReq resetPasswordPost)
+            throws Exception {
         if (resetPasswordPost.getNewPassword() == null || resetPasswordPost.getConfirmPassword() == null) {
-            return ResponseEntity.badRequest()
-                    .body(ErrorResponse.builder().code("400").error("Bad Request").message("Missing field").build());
+            throw new BadRequestException("Missing field");
         }
 
         if (!resetPasswordPost.getNewPassword().equals(resetPasswordPost.getConfirmPassword())) {
-            return ResponseEntity.badRequest().body(ErrorResponse.builder().code("400").error("Bad Request")
-                    .message("Passwords don't match").build());
+            throw new BadRequestException("Passwords don't match");
         }
 
         userService.resetPassword(resetPasswordPost.getToken(), resetPasswordPost.getNewPassword());
@@ -175,24 +167,22 @@ public class UserController {
     }
 
     @PostMapping("/api/user/changePassword")
-    public ResponseEntity<Object> changePassword(@RequestBody ChangePasswordReq changePasswordPost) {
+    public ResponseEntity<SuccessReponse> changePassword(@RequestBody ChangePasswordReq changePasswordPost)
+            throws BadRequestException {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getName();
 
         if (changePasswordPost.getOldPassword() == null || changePasswordPost.getNewPassword() == null
                 || changePasswordPost.getConfirmPassword() == null) {
-            return ResponseEntity.badRequest()
-                    .body(ErrorResponse.builder().code("400").error("Bad Request").message("Missing field").build());
+            throw new BadRequestException("Missing field");
         }
 
         if (changePasswordPost.getOldPassword().equals(changePasswordPost.getNewPassword())) {
-            return ResponseEntity.badRequest().body(ErrorResponse.builder().code("400").error("Bad Request")
-                    .message("New password must be different from old password").build());
+            throw new BadRequestException("New password must be different from old password");
         }
 
         if (!changePasswordPost.getNewPassword().equals(changePasswordPost.getConfirmPassword())) {
-            return ResponseEntity.badRequest().body(ErrorResponse.builder().code("400").error("Bad Request")
-                    .message("Passwords don't match").build());
+            throw new BadRequestException("Passwords don't match");
         }
 
         userService.changePassword(email, changePasswordPost.getOldPassword(),
@@ -202,7 +192,7 @@ public class UserController {
     }
 
     @GetMapping("/api/user/info")
-    public ResponseEntity<Object> getInfo() {
+    public ResponseEntity<SuccessReponse> getInfo() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getPrincipal().toString();
 
@@ -211,7 +201,7 @@ public class UserController {
     }
 
     @PostMapping("/api/user/info")
-    public ResponseEntity<Object> changeInfo(@RequestBody UserInfoReq info) {
+    public ResponseEntity<SuccessReponse> changeInfo(@RequestBody UserInfoReq info) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getPrincipal().toString();
 
@@ -220,7 +210,7 @@ public class UserController {
     }
 
     @GetMapping("/api/user/myProperties")
-    public ResponseEntity<Object> getMyProperties(@RequestParam("page") int page) {
+    public ResponseEntity<SuccessReponse> getMyProperties(@RequestParam("page") int page) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getPrincipal().toString();
 
@@ -229,7 +219,7 @@ public class UserController {
     }
 
     @GetMapping("/api/user/myFavorites")
-    public ResponseEntity<Object> getMyFavorites(@RequestParam("page") int page) {
+    public ResponseEntity<SuccessReponse> getMyFavorites(@RequestParam("page") int page) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getPrincipal().toString();
 
@@ -239,7 +229,7 @@ public class UserController {
     }
 
     @GetMapping("/api/user/favorite/{id}")
-    public ResponseEntity<Object> favorite(@PathVariable("id") Long id) {
+    public ResponseEntity<SuccessReponse> favorite(@PathVariable("id") Long id) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getPrincipal().toString();
 
@@ -248,7 +238,7 @@ public class UserController {
     }
 
     @DeleteMapping("/api/user/favorite/{id}")
-    public ResponseEntity<Object> unfavorite(@PathVariable("id") Long id) {
+    public ResponseEntity<SuccessReponse> unfavorite(@PathVariable("id") Long id) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getPrincipal().toString();
 
@@ -257,11 +247,12 @@ public class UserController {
     }
 
     @GetMapping("/api/avatar/{fileName}")
-    public ResponseEntity<Object> getAvatar(@PathVariable("fileName") String fileName) {
+    public ResponseEntity<ByteArrayResource> getAvatar(@PathVariable("fileName") String fileName)
+            throws IOException, NotFoundException {
         ByteArrayResource avatar = userService.getAvatar(fileName);
 
         if (avatar == null) {
-            return ResponseEntity.notFound().build();
+            throw new NotFoundException("Avatar not found");
         }
 
         return ResponseEntity.ok()
@@ -272,7 +263,7 @@ public class UserController {
     }
 
     @PostMapping("/api/user/avatar")
-    public ResponseEntity<Object> uploadAvatar(@ModelAttribute MultipartFile file) throws Exception {
+    public ResponseEntity<SuccessReponse> uploadAvatar(@ModelAttribute MultipartFile file) throws Exception {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getPrincipal().toString();
 

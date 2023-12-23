@@ -2,6 +2,7 @@ package org.pltv.homescape.service;
 
 import java.util.UUID;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.net.URL;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -313,7 +314,7 @@ public class PropertyService {
         }
     }
 
-    public ByteArrayResource getFile(Long propertyId, String filename) {
+    public ByteArrayResource getFile(Long propertyId, String filename) throws IOException {
         return fileService.getPropertyFile(propertyId, filename);
     }
 }

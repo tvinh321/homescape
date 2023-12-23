@@ -1,6 +1,7 @@
 package org.pltv.homescape.controller;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -11,6 +12,10 @@ import org.pltv.homescape.dto.property.PropertyPostReq;
 import org.pltv.homescape.dto.property.PropertyPostRes;
 import org.pltv.homescape.dto.property.PropertyQueryRes;
 import org.pltv.homescape.dto.property.PropertySearchQuery;
+import org.pltv.homescape.exception.ForbiddenException;
+import org.pltv.homescape.exception.NegativePageException;
+import org.pltv.homescape.exception.NotFoundException;
+import org.pltv.homescape.exception.UnauthenticateException;
 import org.pltv.homescape.dto.property.PropertyFileUpload;
 import org.pltv.homescape.dto.property.PropertyInfoRes;
 import org.pltv.homescape.dto.property.PropertyListRes;
@@ -45,7 +50,7 @@ public class PropertyController {
     private PropertyService propertyService;
 
     @GetMapping("/api/property/outstanding")
-    public ResponseEntity<Object> getOutstandingProperties() {
+    public ResponseEntity<SuccessReponse> getOutstandingProperties() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String email = null;
 
@@ -60,11 +65,10 @@ public class PropertyController {
     }
 
     @PostMapping("/api/property/query")
-    public ResponseEntity<Object> getProperties(@RequestBody PropertySearchQuery query,
-            @RequestParam("page") int page) {
+    public ResponseEntity<SuccessReponse> getProperties(@RequestBody PropertySearchQuery query,
+            @RequestParam("page") int page) throws NegativePageException {
         if (page < 1) {
-            return ResponseEntity.badRequest().body(ErrorResponse.builder().error("Bad Request").code("400")
-                    .message("Page must be greater than 0").build());
+            throw new NegativePageException();
         }
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -81,23 +85,23 @@ public class PropertyController {
     }
 
     @GetMapping("/api/property/{id}")
-    public ResponseEntity<Object> getProperty(@PathVariable("id") Long id) {
+    public ResponseEntity<SuccessReponse> getProperty(@PathVariable("id") Long id) throws NotFoundException {
         PropertyInfoRes property = propertyService.getPropertyInfo(id);
 
         if (property == null) {
-            return ResponseEntity.notFound().build();
+            throw new NotFoundException();
         }
 
         return ResponseEntity.ok(SuccessReponse.builder().data(property).message("Success").build());
     }
 
     @PostMapping("/api/user/property")
-    public ResponseEntity<Object> postMethodName(@RequestBody PropertyPostReq property) {
+    public ResponseEntity<PropertyPostRes> postMethodName(@RequestBody PropertyPostReq property)
+            throws UnauthenticateException {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
         if (auth == null) {
-            return ResponseEntity.badRequest().body(ErrorResponse.builder().error("Bad Request").code("400")
-                    .message("You must login to post a property").build());
+            throw new UnauthenticateException("You must login to post a property");
         }
 
         String email = (String) auth.getPrincipal();
@@ -108,16 +112,17 @@ public class PropertyController {
     }
 
     @PutMapping("/api/user/property/{id}")
-    public ResponseEntity<Object> updateProperty(@PathVariable("id") Long id, @RequestBody PropertyPostReq property) {
+    public ResponseEntity<SuccessReponse> updateProperty(@PathVariable("id") Long id,
+            @RequestBody PropertyPostReq property)
+            throws NotFoundException, ForbiddenException {
         String authorEmail = propertyService.getAuthorEmail(id);
         if (authorEmail == null) {
-            return ResponseEntity.notFound().build();
+            throw new NotFoundException();
         }
 
         String tokenEmail = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (!authorEmail.equals(tokenEmail)) {
-            return ResponseEntity.badRequest().body(ErrorResponse.builder().error("Bad Request").code("400")
-                    .message("You are not the owner of this property").build());
+            throw new ForbiddenException("You are not the owner of this property");
         }
 
         propertyService.updateProperty(property, id);
@@ -126,16 +131,16 @@ public class PropertyController {
     }
 
     @DeleteMapping("/api/user/property/{id}")
-    public ResponseEntity<Object> deleteProperty(@PathVariable("id") Long id) {
+    public ResponseEntity<SuccessReponse> deleteProperty(@PathVariable("id") Long id)
+            throws NotFoundException, ForbiddenException {
         String authorEmail = propertyService.getAuthorEmail(id);
         if (authorEmail == null) {
-            return ResponseEntity.notFound().build();
+            throw new NotFoundException();
         }
 
         String tokenEmail = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (!authorEmail.equals(tokenEmail)) {
-            return ResponseEntity.badRequest().body(ErrorResponse.builder().error("Bad Request").code("400")
-                    .message("You are not the owner of this property").build());
+            throw new ForbiddenException("You are not the owner of this property");
         }
 
         propertyService.deleteProperty(id);
@@ -144,16 +149,16 @@ public class PropertyController {
     }
 
     @PostMapping("/api/user/property/uploadFile")
-    public ResponseEntity<Object> uploadFile(@ModelAttribute PropertyFileUpload upload) {
+    public ResponseEntity<SuccessReponse> uploadFile(@ModelAttribute PropertyFileUpload upload)
+            throws NotFoundException, ForbiddenException {
         String authorEmail = propertyService.getAuthorEmail(upload.getProperty());
         if (authorEmail == null) {
-            return ResponseEntity.notFound().build();
+            throw new NotFoundException();
         }
 
         String tokenEmail = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (!authorEmail.equals(tokenEmail)) {
-            return ResponseEntity.badRequest().body(ErrorResponse.builder().error("Bad Request").code("400")
-                    .message("You are not the owner of this property").build());
+            throw new ForbiddenException("You are not the owner of this property");
         }
 
         propertyService.savePropertyFile(upload.getFile(), upload.getProperty(), upload.getType());
@@ -162,11 +167,12 @@ public class PropertyController {
     }
 
     @GetMapping("/api/property/file/{propertyId}/{filename:.+}")
-    public ResponseEntity<Object> getFile(@PathVariable String filename, @PathVariable Long propertyId) {
+    public ResponseEntity<ByteArrayResource> getFile(@PathVariable String filename, @PathVariable Long propertyId)
+            throws IOException, NotFoundException {
         ByteArrayResource file = propertyService.getFile(propertyId, filename);
 
         if (file == null) {
-            return ResponseEntity.notFound().build();
+            throw new NotFoundException();
         }
 
         return ResponseEntity.ok()

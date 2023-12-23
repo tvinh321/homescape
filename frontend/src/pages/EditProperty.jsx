@@ -31,6 +31,10 @@ export default function PostProperty() {
   const [bedroom, setBedroom] = useState("");
   const [bathroom, setBathroom] = useState("");
   const [floor, setFloor] = useState("");
+
+  const [priorImages, setPriorImages] = useState([]);
+  const [priorPanorama, setPriorPanorama] = useState([]);
+
   const [panorama, setPanorama] = useState([]);
   const [images, setImages] = useState([]);
   const [videos, setVideos] = useState([]);
@@ -86,6 +90,9 @@ export default function PostProperty() {
         setImages(images);
         setPanorama(panorama);
         setVideos(videos);
+
+        setPriorImages(images);
+        setPriorPanorama(panorama);
 
         setTitle(property.title);
         setStreet(property.street);
@@ -219,11 +226,13 @@ export default function PostProperty() {
 
       let imagePromises = Promise.all(
         images.map(async (image) => {
-          image = await imageCompression(image, imagesOptions);
+          if (!priorImages.includes(image)) {
+            image = await imageCompression(image, imagesOptions);
 
-          image = new File([image], image.name + ".jpg", {
-            type: "image/jpeg",
-          });
+            image = new File([image], image.name + ".jpg", {
+              type: "image/jpeg",
+            });
+          }
 
           const formData = new FormData();
           formData.append("property", propertyId);
@@ -246,11 +255,13 @@ export default function PostProperty() {
 
       let panoPromises = Promise.all(
         panorama.map(async (pano) => {
-          pano = await imageCompression(pano, panoramasOptions);
+          if (!priorPanorama.includes(pano)) {
+            pano = await imageCompression(pano, panoramasOptions);
 
-          pano = new File([pano], pano.name + ".jpg", {
-            type: "image/jpeg",
-          });
+            pano = new File([pano], pano.name + ".jpg", {
+              type: "image/jpeg",
+            });
+          }
 
           const formData = new FormData();
           formData.append("property", propertyId);

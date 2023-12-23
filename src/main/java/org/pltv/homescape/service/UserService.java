@@ -2,6 +2,7 @@ package org.pltv.homescape.service;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 import java.util.UUID;
@@ -29,6 +30,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.FileCopyUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import jakarta.transaction.Transactional;
@@ -307,15 +309,20 @@ public class UserService implements UserDetailsService {
                 .build();
     }
 
-    public ByteArrayResource getAvatar(String fileName) {
-        // File file = new File("avatars/" + user.getAvatar());
+    public ByteArrayResource getAvatar(String fileName) throws IOException {
+        // File file = new File("avatars/" + fileName);
+
         // if (file.exists()) {
-        // return new FileSystemResource(file);
+        // byte[] fileContent = FileCopyUtils.copyToByteArray(file);
+        // return new ByteArrayResource(fileContent);
         // }
+
+        // return null;
 
         // S3
         try {
-            ByteArrayResource outputStream = s3Service.downloadFile("avatars/" + fileName);
+            ByteArrayResource outputStream = s3Service.downloadFile("avatars/" +
+                    fileName);
             return outputStream;
         } catch (Exception e) {
             log.error("Error downloading file from S3: " + e.getMessage());

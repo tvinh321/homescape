@@ -40,7 +40,7 @@ public class LocationController {
     }
 
     @GetMapping("/api/location/wards/{id}")
-    public ResponseEntity<Collection<WardResult>> getWards(@PathVariable("id") Long districtId) {
+    public ResponseEntity<List<WardResult>> getWards(@PathVariable("id") Long districtId) {
         List<WardResult> wards = locationService.getWards(districtId).stream()
                 .map(ward -> WardResult.builder().id(ward.getId()).name(ward.getName()).build())
                 .collect(Collectors.toList());
