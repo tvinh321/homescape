@@ -12,7 +12,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.client.HttpClientErrorException.BadRequest;
 
 import io.jsonwebtoken.io.IOException;
 import lombok.extern.slf4j.Slf4j;
@@ -58,18 +57,21 @@ public class GeneralExceptionHandler {
 
     @ExceptionHandler({ InternalServerException.class })
     public ResponseEntity<ErrorResponse> handleInternalServerException(InternalServerException e) {
+        log.error(e.getMessage(), e);
         return ResponseEntity.status(HttpStatusCode.valueOf(500)).body(
                 new ErrorResponse("Internal Server Error", "500", e.getMessage()));
     }
 
     @ExceptionHandler({ IOException.class })
     public ResponseEntity<ErrorResponse> handleIOException(IOException e) {
+        log.error(e.getMessage(), e);
         return ResponseEntity.status(HttpStatusCode.valueOf(500)).body(
                 new ErrorResponse("Internal Server Error", "500", e.getMessage()));
     }
 
     @ExceptionHandler({ Exception.class })
     public ResponseEntity<ErrorResponse> handleException(Exception e) {
+        log.error(e.getMessage(), e);
         return ResponseEntity.status(500).body(
                 new ErrorResponse("Internal Server Error", "500", e.getMessage()));
     }

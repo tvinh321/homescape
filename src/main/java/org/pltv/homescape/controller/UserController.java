@@ -1,20 +1,14 @@
 package org.pltv.homescape.controller;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.net.URL;
-import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-import org.pltv.homescape.dto.ErrorResponse;
 import org.pltv.homescape.dto.SuccessReponse;
 import org.pltv.homescape.dto.user.ChangePasswordReq;
 import org.pltv.homescape.dto.user.CheckTokenReq;
 import org.pltv.homescape.dto.user.ForgetPasswordReq;
 import org.pltv.homescape.dto.user.LoginReq;
 import org.pltv.homescape.dto.user.LoginRes;
-import org.pltv.homescape.dto.property.PropertyListRes;
 import org.pltv.homescape.dto.property.PropertyQueryRes;
 import org.pltv.homescape.dto.user.RegisterReq;
 import org.pltv.homescape.dto.user.RegisterRes;
@@ -29,7 +23,6 @@ import org.pltv.homescape.service.JwtService;
 import org.pltv.homescape.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
-import org.springframework.core.io.Resource;
 import org.springframework.http.CacheControl;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -49,6 +42,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -247,9 +241,9 @@ public class UserController {
     }
 
     @GetMapping("/api/avatar/{fileName}")
-    public ResponseEntity<ByteArrayResource> getAvatar(@PathVariable("fileName") String fileName)
+    public ResponseEntity<StreamingResponseBody> getAvatar(@PathVariable("fileName") String fileName)
             throws IOException, NotFoundException {
-        ByteArrayResource avatar = userService.getAvatar(fileName);
+        StreamingResponseBody avatar = userService.getAvatar(fileName);
 
         if (avatar == null) {
             throw new NotFoundException("Avatar not found");

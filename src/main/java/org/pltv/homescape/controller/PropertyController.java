@@ -1,12 +1,9 @@
 package org.pltv.homescape.controller;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.net.URL;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import org.pltv.homescape.dto.ErrorResponse;
 import org.pltv.homescape.dto.SuccessReponse;
 import org.pltv.homescape.dto.property.PropertyPostReq;
 import org.pltv.homescape.dto.property.PropertyPostRes;
@@ -22,7 +19,6 @@ import org.pltv.homescape.dto.property.PropertyListRes;
 import org.pltv.homescape.service.PropertyService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
-import org.springframework.core.io.Resource;
 import org.springframework.http.CacheControl;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -34,6 +30,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -167,9 +164,9 @@ public class PropertyController {
     }
 
     @GetMapping("/api/property/file/{propertyId}/{filename:.+}")
-    public ResponseEntity<ByteArrayResource> getFile(@PathVariable String filename, @PathVariable Long propertyId)
+    public ResponseEntity<StreamingResponseBody> getFile(@PathVariable String filename, @PathVariable Long propertyId)
             throws IOException, NotFoundException {
-        ByteArrayResource file = propertyService.getFile(propertyId, filename);
+        StreamingResponseBody file = propertyService.getFile(propertyId, filename);
 
         if (file == null) {
             throw new NotFoundException();

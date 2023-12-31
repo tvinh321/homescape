@@ -1,6 +1,5 @@
 package org.pltv.homescape.controller;
 
-import java.util.Collection;
 import java.util.List;
 
 import org.pltv.homescape.dto.location.CityResult;

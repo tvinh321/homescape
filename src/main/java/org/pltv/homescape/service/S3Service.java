@@ -7,19 +7,16 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Scope;
 import org.springframework.core.io.ByteArrayResource;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.URL;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 
 @Service
@@ -54,17 +51,18 @@ public class S3Service {
         return fileName;
     }
 
-    public ByteArrayResource downloadFile(String fileName) throws IOException {
+    public StreamingResponseBody downloadFile(String fileName) throws IOException {
         S3Object s3Object = s3Client.getObject(bucketName, fileName);
-        S3ObjectInputStream inputStream = s3Object.getObjectContent();
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        byte[] buffer = new byte[4096];
-        int bytesRead = -1;
-        while ((bytesRead = inputStream.read(buffer)) != -1) {
-            outputStream.write(buffer, 0, bytesRead);
-        }
-        byte[] fileAsBytes = outputStream.toByteArray();
-        return new ByteArrayResource(fileAsBytes);
+
+        return outputStream -> {
+            try (S3ObjectInputStream inputStream = s3Object.getObjectContent()) {
+                byte[] buffer = new byte[4096];
+                int bytesRead = -1;
+                while ((bytesRead = inputStream.read(buffer)) != -1) {
+                    outputStream.write(buffer, 0, bytesRead);
+                }
+            }
+        };
     }
 
     public boolean delete(String fileName) {
@@ -75,15 +73,6 @@ public class S3Service {
             log.error("Error while deleting file from S3", e);
             throw e;
         }
-    }
-
-    private boolean bucketIsEmpty() {
-        ListObjectsV2Result result = s3Client.listObjectsV2(this.bucketName);
-        if (result == null) {
-            return false;
-        }
-        List<S3ObjectSummary> objects = result.getObjectSummaries();
-        return objects.isEmpty();
     }
 
     public void deleteAllFiles(String directory) {
