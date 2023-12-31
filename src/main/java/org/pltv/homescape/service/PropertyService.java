@@ -1,9 +1,7 @@
 package org.pltv.homescape.service;
 
 import java.util.UUID;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.net.URL;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -19,13 +17,13 @@ import org.pltv.homescape.model.Property;
 import org.pltv.homescape.model.Ward;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
-import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -314,7 +312,7 @@ public class PropertyService {
         }
     }
 
-    public ByteArrayResource getFile(Long propertyId, String filename) throws IOException {
+    public StreamingResponseBody getFile(Long propertyId, String filename) throws IOException {
         return fileService.getPropertyFile(propertyId, filename);
     }
 }

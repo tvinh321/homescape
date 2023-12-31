@@ -14,13 +14,11 @@ import com.sendgrid.helpers.mail.objects.Email;
 import com.sendgrid.helpers.mail.objects.Personalization;
 
 import jakarta.transaction.Transactional;
-import lombok.extern.slf4j.Slf4j;
 
 import java.security.SecureRandom;
 import java.math.BigInteger;
 
 @Service
-@Slf4j
 public class EmailService {
     @Value("${sendgrid.api-key}")
     private String sendGridApiKey;

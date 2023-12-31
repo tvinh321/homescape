@@ -61,7 +61,7 @@ export default function PostProperty() {
         let panorama = [];
         let videos = [];
 
-        const filePromises = property.files.map(async (file, index) => {
+        const filePromises = property.files.map(async (file) => {
           if (file.type !== "video") {
             const res = await axios.get(
               baseURL + "/api/property/file/" + file.url,

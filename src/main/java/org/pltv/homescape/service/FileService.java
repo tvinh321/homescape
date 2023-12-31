@@ -1,8 +1,6 @@
 package org.pltv.homescape.service;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -14,11 +12,9 @@ import org.pltv.homescape.repository.FileRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.core.io.ByteArrayResource;
-import org.springframework.core.io.FileSystemResource;
-import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
-import org.springframework.util.FileCopyUtils;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -98,7 +94,7 @@ public class FileService {
         fileRepo.save(newFile);
     }
 
-    public ByteArrayResource getPropertyFile(Long propertyId, String filename) throws IOException {
+    public StreamingResponseBody getPropertyFile(Long propertyId, String filename) throws IOException {
         // java.io.File file = new java.io.File("properties/" + propertyId + "/" +
         // filename);
         // if (file.exists()) {
@@ -108,7 +104,7 @@ public class FileService {
 
         // S3
         try {
-            ByteArrayResource outputStream = s3Service.downloadFile("properties/" +
+            StreamingResponseBody outputStream = s3Service.downloadFile("properties/" +
                     propertyId + "/" + filename);
             return outputStream;
         } catch (Exception e) {
