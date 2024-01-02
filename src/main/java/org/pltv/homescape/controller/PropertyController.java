@@ -18,7 +18,6 @@ import org.pltv.homescape.dto.property.PropertyInfoRes;
 import org.pltv.homescape.dto.property.PropertyListRes;
 import org.pltv.homescape.service.PropertyService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.CacheControl;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;

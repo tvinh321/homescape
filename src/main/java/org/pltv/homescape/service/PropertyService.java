@@ -16,7 +16,6 @@ import org.pltv.homescape.dto.property.PropertyQueryRes;
 import org.pltv.homescape.model.Property;
 import org.pltv.homescape.model.Ward;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ByteArrayResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.Authentication;

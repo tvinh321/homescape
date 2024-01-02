@@ -22,7 +22,6 @@ import org.pltv.homescape.service.EmailService;
 import org.pltv.homescape.service.JwtService;
 import org.pltv.homescape.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.CacheControl;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
