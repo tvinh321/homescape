@@ -11,7 +11,6 @@ import org.pltv.homescape.model.Property;
 import org.pltv.homescape.repository.FileRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.core.io.ByteArrayResource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
@@ -140,7 +139,7 @@ public class FileService {
         Property property = propertyService.getProperty(id);
 
         if (property == null) {
-            log.error("Property not found");
+            log.error("Property not found when saving video. Property ID: " + id);
             throw new IllegalArgumentException("Property not found");
         }
 
