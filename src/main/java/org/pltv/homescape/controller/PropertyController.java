@@ -31,15 +31,12 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
-import lombok.extern.slf4j.Slf4j;
-
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
-@Slf4j
 public class PropertyController {
 
     @Autowired
@@ -52,7 +49,6 @@ public class PropertyController {
 
         if (auth != null) {
             email = (String) auth.getPrincipal();
-            log.info("Email: " + email);
         }
 
         List<PropertyListRes> properties = propertyService.getOutstandingProperties(email);
@@ -72,7 +68,6 @@ public class PropertyController {
 
         if (auth != null) {
             email = (String) auth.getPrincipal();
-            log.info("Email: " + email);
         }
 
         PropertyQueryRes properties = propertyService.getPropertiesQuery(query, page, email);

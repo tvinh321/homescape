@@ -139,7 +139,7 @@ public class FileService {
         Property property = propertyService.getProperty(id);
 
         if (property == null) {
-            log.error("Property not found");
+            log.error("Property not found when saving video. Property ID: " + id);
             throw new IllegalArgumentException("Property not found");
         }
 
