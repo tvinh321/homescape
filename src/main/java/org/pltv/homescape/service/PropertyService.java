@@ -18,6 +18,7 @@ import org.pltv.homescape.model.Ward;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -134,6 +135,25 @@ public class PropertyService {
             }
         }
 
+        String sort = query.getSort();
+        Sort sortQuery = null;
+
+        if (sort != null) {
+            if (sort.equals("price_asc")) {
+                sortQuery = Sort.by("price").ascending();
+            } else if (sort.equals("price_desc")) {
+                sortQuery = Sort.by("price").descending();
+            } else if (sort.equals("area_asc")) {
+                sortQuery = Sort.by("area").ascending();
+            } else if (sort.equals("area_desc")) {
+                sortQuery = Sort.by("area").descending();
+            } else if (sort.equals("popular")) {
+                sortQuery = Sort.by("viewCount").descending();
+            } else if (sort.equals("newest")) {
+                sortQuery = Sort.by("createdAt").descending();
+            }
+        }
+
         Page<Property> properties = propertyRepo.searchProperties(
                 query.getTitle(),
                 query.getType(),
@@ -147,8 +167,7 @@ public class PropertyService {
                 bedroom == null ? null : bedroomByte,
                 bedroom == null ? null : is5Plus,
                 query.getDirection(),
-                query.getSort(),
-                PageRequest.of(page - 1, 10));
+                PageRequest.of(page - 1, 10, sortQuery));
 
         List<PropertyListRes> propertyList = convertToPropertyListRes(properties.getContent(), email);
 
@@ -204,7 +223,6 @@ public class PropertyService {
 
         if (auth != null) {
             email = (String) auth.getPrincipal();
-            log.info("Email: " + email);
         }
 
         Property property = propertyRepo.findById(propertyId).orElse(null);
@@ -260,7 +278,6 @@ public class PropertyService {
         Property oldProperty = propertyRepo.findById(propertyId).orElse(null);
 
         if (oldProperty == null) {
-            log.error("Property not found");
             throw new IllegalArgumentException("Property not found");
         }
 

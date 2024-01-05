@@ -30,10 +30,6 @@ public class S3ClientConfig {
     public AmazonS3 initS3Client() {
         AWSCredentials credentials = new BasicAWSCredentials(this.accessKey, this.secretKey);
 
-        log.info("Initializing S3 client...");
-        log.info(accessKey);
-        log.info(secretKey);
-
         return AmazonS3ClientBuilder.standard()
                 .withRegion(Regions.US_EAST_1)
                 .withCredentials(new AWSStaticCredentialsProvider(credentials))

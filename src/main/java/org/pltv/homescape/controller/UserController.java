@@ -80,14 +80,12 @@ public class UserController {
                 return ResponseEntity.ok().body(LoginRes.builder().email(loginPost.getEmail())
                         .token(jwtService.generateToken((User) authentication.getPrincipal())).build());
             } else {
-                log.error("Authentication failed");
+                log.error("Authentication failed: " + loginPost.getEmail());
                 throw new InternalServerException("Authentication failed");
             }
         } catch (BadCredentialsException e) {
-            log.info(e.getMessage());
             throw new BadRequestException("Invalid password");
         } catch (UsernameNotFoundException e) {
-            log.info(e.getMessage());
             throw new BadRequestException("Email not found");
         }
     }

@@ -52,7 +52,6 @@ public class PropertyController {
 
         if (auth != null) {
             email = (String) auth.getPrincipal();
-            log.info("Email: " + email);
         }
 
         List<PropertyListRes> properties = propertyService.getOutstandingProperties(email);
@@ -72,7 +71,6 @@ public class PropertyController {
 
         if (auth != null) {
             email = (String) auth.getPrincipal();
-            log.info("Email: " + email);
         }
 
         PropertyQueryRes properties = propertyService.getPropertiesQuery(query, page, email);

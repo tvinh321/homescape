@@ -33,14 +33,7 @@ public interface PropertyRepository extends JpaRepository<Property, Long> {
                         "AND (:upperArea IS NULL OR p.area <= :upperArea) " +
                         "AND ((:#{null eq #bedroom} = true OR p.bedroom IN :bedroom) OR (:bedroomMoreThan5 IS NULL OR p.bedroom >= 5)) "
                         +
-                        "AND (:#{null eq #direction} = true OR p.direction IN :direction) " +
-                        "ORDER BY " +
-                        "   CASE WHEN :sort = 'popular' THEN p.viewCount END DESC, " +
-                        "   CASE WHEN :sort = 'newest' THEN p.createdAt END DESC, " +
-                        "   CASE WHEN :sort = 'price_asc' THEN p.price END ASC, " +
-                        "   CASE WHEN :sort = 'price_desc' THEN p.price END DESC, " +
-                        "   CASE WHEN :sort = 'area_asc' THEN p.area END ASC, " +
-                        "   CASE WHEN :sort = 'area_desc' THEN p.area END DESC")
+                        "AND (:#{null eq #direction} = true OR p.direction IN :direction) ")
         Page<Property> searchProperties(
                         @Param("title") String title,
                         @Param("type") List<String> type,
@@ -54,7 +47,6 @@ public interface PropertyRepository extends JpaRepository<Property, Long> {
                         @Param("bedroom") List<Byte> bedroom,
                         @Param("bedroomMoreThan5") Boolean bedroomMoreThan5,
                         @Param("direction") List<String> direction,
-                        @Param("sort") String sort,
                         Pageable pageable);
 
         Page<Property> findByUserId(UUID userId, PageRequest of);

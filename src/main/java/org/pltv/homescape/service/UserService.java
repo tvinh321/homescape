@@ -55,7 +55,6 @@ public class UserService implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = userRepo.findByEmail(username);
         if (user == null) {
-            log.error("User not found");
             throw new UsernameNotFoundException("User not found");
         }
 
@@ -65,7 +64,6 @@ public class UserService implements UserDetailsService {
     public User getUserByEmail(String email) {
         User user = userRepo.findByEmail(email);
         if (user == null) {
-            log.error("User not found");
             throw new UsernameNotFoundException("User not found");
         }
 
@@ -82,10 +80,9 @@ public class UserService implements UserDetailsService {
 
             emailService.sendVerifyEmail(user.getEmail());
         } catch (DataIntegrityViolationException e) {
-            log.error("Email already exists");
             throw new Exception("Email already exists");
         } catch (Exception e) {
-            log.error("Error when registering");
+            log.error("Error when registering", e);
             throw new Exception("Error when registering");
         }
     }
@@ -93,19 +90,16 @@ public class UserService implements UserDetailsService {
     public void verifyEmail(String token) throws Exception {
         Boolean verification = emailService.verifyEmailToken(token, false);
         if (verification == false) {
-            log.error("Token is invalid");
             throw new Exception("Token is invalid");
         }
 
         String email = emailService.getEmailFromToken(token);
         if (email == null) {
-            log.error("Token is invalid");
             throw new Exception("Token is invalid");
         }
 
         User user = userRepo.findByEmail(email);
         if (user == null) {
-            log.error("User not found");
             throw new UsernameNotFoundException("User not found");
         }
 
@@ -118,7 +112,6 @@ public class UserService implements UserDetailsService {
     public boolean checkUserVerified(String email) {
         User user = userRepo.findByEmail(email);
         if (user == null) {
-            log.error("User not found");
             throw new UsernameNotFoundException("User not found");
         }
 
@@ -128,7 +121,6 @@ public class UserService implements UserDetailsService {
     public void forgotPassword(String email) throws Exception {
         User user = userRepo.findByEmail(email);
         if (user == null) {
-            log.error("User not found");
             throw new Exception("User not found");
         }
 
@@ -138,19 +130,16 @@ public class UserService implements UserDetailsService {
     public void resetPassword(String token, String newPassword) throws Exception {
         Boolean verification = emailService.verifyEmailToken(token, true);
         if (verification == false) {
-            log.error("Token is invalid");
             throw new Exception("Token is invalid");
         }
 
         String email = emailService.getEmailFromToken(token);
         if (email == null) {
-            log.error("Token is invalid");
             throw new Exception("Token is invalid");
         }
 
         User user = userRepo.findByEmail(email);
         if (user == null) {
-            log.error("User not found");
             throw new UsernameNotFoundException("User not found");
         }
 
@@ -163,7 +152,6 @@ public class UserService implements UserDetailsService {
     public void changePassword(String email, String oldPassword, String newPassword) {
         User user = userRepo.findByEmail(email);
         if (user == null) {
-            log.error("User not found");
             throw new UsernameNotFoundException("User not found");
         }
 
@@ -171,7 +159,6 @@ public class UserService implements UserDetailsService {
             user.setPassword(passwordEncoder.encode(newPassword));
             userRepo.save(user);
         } else {
-            log.error("Old password is incorrect");
             throw new IllegalArgumentException("Old password is incorrect");
         }
     }
@@ -179,7 +166,6 @@ public class UserService implements UserDetailsService {
     public UserInfoReq getUserInfo(String email) {
         User user = userRepo.findByEmail(email);
         if (user == null) {
-            log.error("User not found");
             throw new UsernameNotFoundException("User not found");
         }
 
@@ -199,7 +185,6 @@ public class UserService implements UserDetailsService {
     public UserInfoRes updateUserInfo(UserInfoReq info, String email) {
         User user = userRepo.findByEmail(email);
         if (user == null) {
-            log.error("User not found");
             throw new UsernameNotFoundException("User not found");
         }
 
@@ -209,7 +194,7 @@ public class UserService implements UserDetailsService {
 
         Ward ward = locationService.getWardFromId(info.getWard());
         if (ward == null) {
-            log.error("Ward not found");
+            log.error("Ward not found. Ward ID: " + info.getWard());
             throw new IllegalArgumentException("Ward not found");
         }
         user.setWard(ward);
@@ -229,7 +214,6 @@ public class UserService implements UserDetailsService {
     public PropertyQueryRes getProperties(String email, int page) {
         User user = userRepo.findByEmail(email);
         if (user == null) {
-            log.error("User not found");
             throw new UsernameNotFoundException("User not found");
         }
 
@@ -240,7 +224,6 @@ public class UserService implements UserDetailsService {
     public PropertyQueryRes getFavoritesProperties(String email, int page) {
         User user = userRepo.findByEmail(email);
         if (user == null) {
-            log.error("User not found");
             throw new UsernameNotFoundException("User not found");
         }
 
@@ -251,13 +234,11 @@ public class UserService implements UserDetailsService {
     public void addToFavorite(String email, Long propertyId) {
         User user = userRepo.findByEmail(email);
         if (user == null) {
-            log.error("User not found");
             throw new UsernameNotFoundException("User not found");
         }
 
         Property property = propertyService.getProperty(propertyId);
         if (property == null) {
-            log.error("Property not found");
             throw new IllegalArgumentException("Property not found");
         }
 
@@ -271,13 +252,11 @@ public class UserService implements UserDetailsService {
     public void removeFromFavorite(String email, Long propertyId) {
         User user = userRepo.findByEmail(email);
         if (user == null) {
-            log.error("User not found");
             throw new UsernameNotFoundException("User not found");
         }
 
         Property property = propertyService.getProperty(propertyId);
         if (property == null) {
-            log.error("Property not found");
             throw new IllegalArgumentException("Property not found");
         }
 
@@ -322,14 +301,12 @@ public class UserService implements UserDetailsService {
     public void saveAvatar(MultipartFile file, String email) throws Exception {
         User user = userRepo.findByEmail(email);
         if (user == null) {
-            log.error("User not found");
             throw new UsernameNotFoundException("User not found");
         }
 
         String fileExtension = fileService.getFileExtension(file);
 
         if (fileExtension == null) {
-            log.error("File extension is not supported");
             throw new IllegalArgumentException("File extension is not supported");
         }
 
